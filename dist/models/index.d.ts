@@ -1,131 +1,98 @@
 export interface BaseEntity {
     id?: string;
-    createdAt?: number;
-    updatedAt?: number;
 }
 export interface Account extends BaseEntity {
     name: string;
-    type: string;
-    balance?: number;
-    currency?: string;
-    description?: string;
     active?: boolean;
+    initialBalance?: number;
 }
 export interface Area extends BaseEntity {
     name: string;
     description?: string;
-    code?: string;
-    active?: boolean;
+    managerEmployeeId?: string;
 }
 export interface Category extends BaseEntity {
     name: string;
-    description?: string;
-    parentId?: string;
+    type: 'income' | 'expense';
     active?: boolean;
 }
 export interface Client extends BaseEntity {
     name: string;
-    email?: string;
-    phone?: string;
     address?: string;
-    city?: string;
-    country?: string;
-    taxId?: string;
-    active?: boolean;
-    notes?: string;
+    phone?: string;
+    description?: string;
 }
-export interface CompanyInfo extends BaseEntity {
-    name: string;
-    legalName?: string;
-    taxId?: string;
+export interface CompanyInfo {
     address?: string;
-    city?: string;
-    country?: string;
-    phone?: string;
     email?: string;
-    website?: string;
-    logo?: string;
-    settings?: Record<string, any>;
+    legalName?: string;
+    mission?: string;
+    mobile?: string;
+    phone?: string;
+    rut?: string;
+    tradeName?: string;
+    vision?: string;
 }
 export interface Employee extends BaseEntity {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone?: string;
-    position?: string;
-    department?: string;
-    hireDate?: number;
-    active?: boolean;
-    userId?: string;
+    name: string;
+    roleIds?: string[];
 }
 export interface Order extends BaseEntity {
-    orderNumber: string;
     clientId: string;
-    employeeId?: string;
+    clientName?: string;
     status: string;
     total: number;
-    currency?: string;
+    createdAt?: number;
+    deliveryDate?: number;
     items?: OrderItem[];
-    notes?: string;
-    orderDate?: number;
 }
 export interface OrderItem {
     productId: string;
+    productName?: string;
     quantity: number;
     price: number;
-    subtotal: number;
 }
 export interface Process extends BaseEntity {
     name: string;
-    description?: string;
-    steps?: ProcessStep[];
-    active?: boolean;
+    areaId?: string;
+    objective?: string;
+    taskIds?: string[];
+    activities?: ProcessActivity[];
 }
-export interface ProcessStep {
-    order: number;
+export interface ProcessActivity {
     name: string;
-    description?: string;
-    completed?: boolean;
+    taskId: string;
 }
 export interface Product extends BaseEntity {
     name: string;
-    description?: string;
-    sku?: string;
     price: number;
-    currency?: string;
-    categoryId?: string;
-    stock?: number;
     active?: boolean;
-    images?: string[];
 }
 export interface Role extends BaseEntity {
     name: string;
-    description?: string;
-    permissions?: string[];
-    active?: boolean;
 }
 export interface Task extends BaseEntity {
-    title: string;
+    name: string;
     description?: string;
-    assignedTo?: string;
-    assignedBy?: string;
-    status: string;
-    priority?: string;
-    dueDate?: number;
-    completedDate?: number;
-    relatedEntityType?: string;
-    relatedEntityId?: string;
+    processId?: string;
+    order?: number;
+    type?: string;
+    assignedEmployeeId?: string;
+    roleIds?: string[];
+    estimatedTime?: number;
+    executionSteps?: string[];
+    successCriteria?: string[];
+    commonErrors?: string[];
 }
 export interface Transaction extends BaseEntity {
     type: 'income' | 'expense';
     accountId: string;
+    accountName?: string;
     amount: number;
-    currency?: string;
+    categoryId?: string;
+    categoryName?: string;
     description?: string;
-    category?: string;
     date: number;
-    reference?: string;
-    relatedEntityType?: string;
-    relatedEntityId?: string;
+    createdAt?: number;
 }
 //# sourceMappingURL=index.d.ts.map

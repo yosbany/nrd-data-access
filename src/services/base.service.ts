@@ -60,31 +60,20 @@ export class BaseService<T extends BaseEntity> {
   /**
    * Create a new entity
    */
-  async create(entity: Omit<T, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async create(entity: Omit<T, 'id'>): Promise<string> {
     const db = getFirebaseDatabase();
     const newRef = push(ref(db, this.path));
     
-    const newEntity = {
-      ...entity,
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    } as T;
-
-    await set(newRef, newEntity);
+    await set(newRef, entity);
     return newRef.key!;
   }
 
   /**
    * Update an existing entity
    */
-  async update(id: string, updates: Partial<Omit<T, 'id' | 'createdAt'>>): Promise<void> {
+  async update(id: string, updates: Partial<Omit<T, 'id'>>): Promise<void> {
     const db = getFirebaseDatabase();
-    const updatesWithTimestamp = {
-      ...updates,
-      updatedAt: Date.now()
-    };
-    
-    await update(ref(db, `${this.path}/${id}`), updatesWithTimestamp);
+    await update(ref(db, `${this.path}/${id}`), updates);
   }
 
   /**

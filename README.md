@@ -80,9 +80,8 @@ const client = await nrd.clients.getById('client-id');
 // Crear un nuevo cliente
 const clientId = await nrd.clients.create({
   name: 'Juan Pérez',
-  email: 'juan@example.com',
   phone: '+1234567890',
-  active: true
+  address: 'Calle Ejemplo 123'
 });
 
 // Actualizar un cliente
@@ -94,7 +93,12 @@ await nrd.clients.update('client-id', {
 await nrd.clients.delete('client-id');
 
 // Consultar por campo
-const activeClients = await nrd.clients.queryByChild('active', true);
+const clientsByName = await nrd.clients.queryByChild('name', 'Juan Pérez');
+
+// CompanyInfo tiene métodos especiales (es un objeto único, no una colección)
+const companyInfo = await nrd.companyInfo.get();
+await nrd.companyInfo.update({ phone: '+1234567890' });
+await nrd.companyInfo.set({ tradeName: 'Mi Empresa', address: 'Calle 123' });
 
 // Escuchar cambios en tiempo real
 const unsubscribe = nrd.clients.onValue((clients) => {
@@ -128,11 +132,14 @@ La librería proporciona los siguientes servicios:
 ## Modelos de Datos
 
 Todos los modelos extienden `BaseEntity` que incluye:
-- `id?: string` - ID del registro
-- `createdAt?: number` - Timestamp de creación
-- `updatedAt?: number` - Timestamp de última actualización
+- `id?: string` - ID del registro (agregado automáticamente por la librería)
 
-Consulta los tipos TypeScript en `src/models/index.ts` para ver la estructura completa de cada modelo.
+**Nota especial sobre CompanyInfo**: `companyInfo` es un objeto único (no una colección), por lo que usa métodos especiales:
+- `get()` - Obtiene la información de la empresa
+- `set(data)` - Establece/reemplaza toda la información
+- `update(updates)` - Actualiza parcialmente la información
+
+Consulta los tipos TypeScript en `src/models/index.ts` para ver la estructura completa de cada modelo. Los modelos están definidos según la estructura real de los datos en Firebase Realtime Database.
 
 ## Scripts Disponibles
 

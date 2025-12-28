@@ -13,11 +13,11 @@ export declare class BaseService<T extends BaseEntity> {
     /**
      * Create a new entity
      */
-    create(entity: Omit<T, 'id' | 'createdAt' | 'updatedAt'>): Promise<string>;
+    create(entity: Omit<T, 'id'>): Promise<string>;
     /**
      * Update an existing entity
      */
-    update(id: string, updates: Partial<Omit<T, 'id' | 'createdAt'>>): Promise<void>;
+    update(id: string, updates: Partial<Omit<T, 'id'>>): Promise<void>;
     /**
      * Delete an entity
      */
