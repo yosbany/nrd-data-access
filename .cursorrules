@@ -183,6 +183,15 @@ ProcessActivity: { name: string; taskId: string; }
 5. CompanyInfo es un objeto único, no una colección
 6. Todos los campos marcados con `?` son opcionales
 
+## Agregar Nuevos Métodos
+
+Si necesitas un método específico que no está disponible en la librería, simplemente solicita las instrucciones para implementarlo en este proyecto. El método se agregará al servicio correspondiente siguiendo los patrones establecidos en `BaseService`.
+
+**Ejemplo de solicitud:**
+- "Necesito un método para ordenar productos por precio"
+- "Quiero un método para buscar clientes por rango de fechas"
+- "Necesito filtrar transacciones por múltiples criterios"
+
 ## Repositorio
 
 https://github.com/yosbany/nrd-data-access

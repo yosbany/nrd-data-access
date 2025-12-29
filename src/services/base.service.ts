@@ -10,7 +10,8 @@ import {
   equalTo,
   onValue,
   off,
-  DataSnapshot
+  DataSnapshot,
+  DatabaseReference
 } from 'firebase/database';
 import { getFirebaseDatabase } from '../config/firebase';
 import { BaseEntity } from '../models';
@@ -101,6 +102,22 @@ export class BaseService<T extends BaseEntity> {
       id: key,
       ...data[key]
     })) as T[];
+  }
+
+  /**
+   * Get reference to the database path (useful for advanced queries or custom operations)
+   */
+  getRef(): DatabaseReference {
+    const db = getFirebaseDatabase();
+    return ref(db, this.path);
+  }
+
+  /**
+   * Get reference to a specific entity by ID (useful for advanced queries or custom operations)
+   */
+  getRefById(id: string): DatabaseReference {
+    const db = getFirebaseDatabase();
+    return ref(db, `${this.path}/${id}`);
   }
 
   /**

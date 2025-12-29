@@ -1,3 +1,4 @@
+import { DatabaseReference } from 'firebase/database';
 import { BaseEntity } from '../models';
 export declare class BaseService<T extends BaseEntity> {
     protected path: string;
@@ -26,6 +27,14 @@ export declare class BaseService<T extends BaseEntity> {
      * Query entities by child value
      */
     queryByChild(childPath: string, value: any): Promise<T[]>;
+    /**
+     * Get reference to the database path (useful for advanced queries or custom operations)
+     */
+    getRef(): DatabaseReference;
+    /**
+     * Get reference to a specific entity by ID (useful for advanced queries or custom operations)
+     */
+    getRefById(id: string): DatabaseReference;
     /**
      * Listen to real-time changes
      */
