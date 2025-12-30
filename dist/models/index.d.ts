@@ -95,4 +95,16 @@ export interface Transaction extends BaseEntity {
     date: number;
     createdAt?: number;
 }
+export interface Contract extends BaseEntity {
+    name: string;
+    description?: string;
+    importantData?: {
+        [key: string]: string;
+    };
+    documents?: ContractDocument[];
+}
+export interface ContractDocument {
+    name: string;
+    data: string;
+}
 //# sourceMappingURL=index.d.ts.map

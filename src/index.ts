@@ -5,6 +5,7 @@ import { AreasService } from './services/areas.service';
 import { CategoriesService } from './services/categories.service';
 import { ClientsService } from './services/clients.service';
 import { CompanyInfoService } from './services/company-info.service';
+import { ContractsService } from './services/contracts.service';
 import { EmployeesService } from './services/employees.service';
 import { OrdersService } from './services/orders.service';
 import { ProcessesService } from './services/processes.service';
@@ -19,6 +20,7 @@ export * from './models';
 // Export services
 export { AuthService } from './services/auth.service';
 export { BaseService } from './services/base.service';
+export { ContractsService } from './services/contracts.service';
 
 // Main library class
 class NRDDataAccess {
@@ -28,6 +30,7 @@ class NRDDataAccess {
   public categories: CategoriesService;
   public clients: ClientsService;
   public companyInfo: CompanyInfoService;
+  public contracts: ContractsService;
   public employees: EmployeesService;
   public orders: OrdersService;
   public processes: ProcessesService;
@@ -47,6 +50,7 @@ class NRDDataAccess {
     this.categories = new CategoriesService();
     this.clients = new ClientsService();
     this.companyInfo = new CompanyInfoService();
+    this.contracts = new ContractsService();
     this.employees = new EmployeesService();
     this.orders = new OrdersService();
     this.processes = new ProcessesService();

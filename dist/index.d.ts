@@ -4,6 +4,7 @@ import { AreasService } from './services/areas.service';
 import { CategoriesService } from './services/categories.service';
 import { ClientsService } from './services/clients.service';
 import { CompanyInfoService } from './services/company-info.service';
+import { ContractsService } from './services/contracts.service';
 import { EmployeesService } from './services/employees.service';
 import { OrdersService } from './services/orders.service';
 import { ProcessesService } from './services/processes.service';
@@ -14,6 +15,7 @@ import { TransactionsService } from './services/transactions.service';
 export * from './models';
 export { AuthService } from './services/auth.service';
 export { BaseService } from './services/base.service';
+export { ContractsService } from './services/contracts.service';
 declare class NRDDataAccess {
     auth: AuthService;
     accounts: AccountsService;
@@ -21,6 +23,7 @@ declare class NRDDataAccess {
     categories: CategoriesService;
     clients: ClientsService;
     companyInfo: CompanyInfoService;
+    contracts: ContractsService;
     employees: EmployeesService;
     orders: OrdersService;
     processes: ProcessesService;
