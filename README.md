@@ -121,6 +121,7 @@ La librería proporciona los siguientes servicios:
 - `nrd.categories` - Categorías (CategoriesService)
 - `nrd.clients` - Clientes (ClientsService)
 - `nrd.companyInfo` - Información de la empresa (CompanyInfoService)
+- `nrd.contracts` - Contratos y Habilitaciones (ContractsService)
 - `nrd.employees` - Empleados (EmployeesService)
 - `nrd.orders` - Órdenes (OrdersService)
 - `nrd.processes` - Procesos (ProcessesService)
