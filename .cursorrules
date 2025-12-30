@@ -128,7 +128,7 @@ const unsubscribe = nrd.auth.onAuthStateChanged((user) => {
 });
 ```
 
-## Operaciones CRUD (para todas las entidades: accounts, areas, categories, clients, employees, orders, processes, products, roles, tasks, transactions)
+## Operaciones CRUD (para todas las entidades: accounts, areas, categories, clients, contracts, employees, orders, processes, products, roles, tasks, transactions)
 
 ```javascript
 // Obtener todos
@@ -199,6 +199,12 @@ await nrd.companyInfo.update({ phone: '789' });
 { name: string; address?: string; phone?: string; description?: string; }
 ```
 
+### Contract
+```typescript
+{ name: string; description?: string; importantData?: { [key: string]: string; }; documents?: ContractDocument[]; }
+ContractDocument: { name: string; data: string; } // data es un data URL (base64)
+```
+
 ### CompanyInfo
 ```typescript
 { address?: string; email?: string; legalName?: string; mission?: string; mobile?: string; phone?: string; rut?: string; tradeName?: string; vision?: string; }
@@ -249,6 +255,7 @@ ProcessActivity: { name: string; taskId: string; }
 - `nrd.categories` - CategoriesService
 - `nrd.clients` - ClientsService
 - `nrd.companyInfo` - CompanyInfoService (métodos: get, set, update)
+- `nrd.contracts` - ContractsService
 - `nrd.employees` - EmployeesService
 - `nrd.orders` - OrdersService
 - `nrd.processes` - ProcessesService
