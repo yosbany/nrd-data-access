@@ -101,9 +101,7 @@ export interface Task extends BaseEntity {
   description?: string;
   processId?: string;
   order?: number;
-  type?: string;
   assignedEmployeeId?: string;
-  roleIds?: string[];
   estimatedTime?: number;
   executionSteps?: string[];
   successCriteria?: string[];

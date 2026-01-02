@@ -277,14 +277,13 @@
                     { name: 'description', type: 'string', required: false },
                     { name: 'processId', type: 'string', required: false },
                     { name: 'order', type: 'number', required: false },
-                    { name: 'type', type: 'string', required: false },
                     { name: 'assignedEmployeeId', type: 'string', required: false },
-                    { name: 'roleIds', type: 'string[]', required: false },
                     { name: 'estimatedTime', type: 'number', required: false },
                     { name: 'executionSteps', type: 'string[]', required: false },
                     { name: 'successCriteria', type: 'string[]', required: false },
                     { name: 'commonErrors', type: 'string[]', required: false }
-                ]
+                ],
+                note: 'Los roles y tipo de rol se deducen de los procesos y sus flujos'
             },
             Transaction: {
                 name: 'Transaction',
