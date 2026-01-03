@@ -224,7 +224,7 @@ OrderItem: { productId: string; productName?: string; quantity: number; price: n
 ### Process
 ```typescript
 { name: string; areaId?: string; objective?: string; taskIds?: string[]; activities?: ProcessActivity[]; }
-ProcessActivity: { name: string; taskId: string; }
+ProcessActivity: { name: string; taskId: string; roleId?: string; }
 ```
 
 ### Product

@@ -62,6 +62,7 @@ export interface Process extends BaseEntity {
 export interface ProcessActivity {
     name: string;
     taskId: string;
+    roleId?: string;
 }
 export interface Product extends BaseEntity {
     name: string;
