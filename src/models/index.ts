@@ -30,6 +30,14 @@ export interface Client extends BaseEntity {
   address?: string;
   phone?: string;
   description?: string;
+  preferredPrices?: PreferredPrice[];
+}
+
+export interface PreferredPrice {
+  productId: string;
+  type: 'fijo' | 'porcentual';
+  price?: number; // Precio fijo o precio calculado (si es porcentual)
+  percentage?: number; // Porcentaje de descuento (solo si type es 'porcentual')
 }
 
 // CompanyInfo model (single object, not a collection)

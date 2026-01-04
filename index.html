@@ -180,8 +180,17 @@
                     { name: 'name', type: 'string', required: true },
                     { name: 'address', type: 'string', required: false },
                     { name: 'phone', type: 'string', required: false },
-                    { name: 'description', type: 'string', required: false }
-                ]
+                    { name: 'description', type: 'string', required: false },
+                    { name: 'preferredPrices', type: 'PreferredPrice[]', required: false }
+                ],
+                nested: {
+                    PreferredPrice: [
+                        { name: 'productId', type: 'string', required: true },
+                        { name: 'type', type: "'fijo' | 'porcentual'", required: true },
+                        { name: 'price', type: 'number', required: false, note: 'Precio fijo o precio calculado (si es porcentual)' },
+                        { name: 'percentage', type: 'number', required: false, note: 'Porcentaje de descuento (solo si type es porcentual)' }
+                    ]
+                }
             },
             Contract: {
                 name: 'Contract',

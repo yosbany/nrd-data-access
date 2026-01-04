@@ -196,7 +196,8 @@ await nrd.companyInfo.update({ phone: '789' });
 
 ### Client
 ```typescript
-{ name: string; address?: string; phone?: string; description?: string; }
+{ name: string; address?: string; phone?: string; description?: string; preferredPrices?: PreferredPrice[]; }
+PreferredPrice: { productId: string; type: 'fijo' | 'porcentual'; price?: number; percentage?: number; }
 ```
 
 ### Contract

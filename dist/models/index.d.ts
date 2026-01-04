@@ -21,6 +21,13 @@ export interface Client extends BaseEntity {
     address?: string;
     phone?: string;
     description?: string;
+    preferredPrices?: PreferredPrice[];
+}
+export interface PreferredPrice {
+    productId: string;
+    type: 'fijo' | 'porcentual';
+    price?: number;
+    percentage?: number;
 }
 export interface CompanyInfo {
     address?: string;
