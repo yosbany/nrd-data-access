@@ -1,0 +1,411 @@
+---
+alwaysApply: true
+---
+# NRD System - User Rules & Project Archetype
+
+Este documento contiene el arquetipo y reglas esenciales del sistema NRD para referencia rápida durante el desarrollo.
+
+## Stack Tecnológico
+
+- **JavaScript**: ES6 nativo (sin frameworks)
+- **CSS**: Tailwind CSS (via CDN)
+- **Backend**: Firebase Realtime Database (compat mode)
+- **Data Access**: NRD Data Access Library (propia)
+- **Prohibido**: jQuery, React, Vue, Angular, Lodash, bundlers
+
+## Estructura de Archivos
+
+```
+app-name/
+├── index.html          # HTML principal + Firebase config
+├── app.js             # Navegación principal
+├── auth.js            # Autenticación
+├── modal.js           # Modales y alertas
+├── tabs/              # Carpeta de tabs (módulos por entidad)
+│   └── [entity].js    # Tabs (módulos por entidad)
+├── tools/             # Herramientas del proyecto
+│   ├── local-server/     # Servidor local
+│   │   └── server.sh      # Script para iniciar servidor local
+│   ├── generate-icons/    # Generador de iconos
+│   │   └── generate-icons.py  # Generador de iconos (reemplaza HTML)
+│   └── update-version/    # Actualizador de versión
+│       └── update-version.py  # Actualiza parámetros de versión para cache busting
+├── styles.css         # Estilos mínimos
+├── service-worker.js  # PWA
+└── manifest.json      # PWA config
+```
+
+## Paleta de Colores
+
+- **Primario**: `bg-red-600` (#dc2626)
+- **Hover Primario**: `hover:bg-red-700`
+- **Secundario**: `text-gray-600`, `border-gray-300`
+- **Éxito**: `bg-green-600`
+- **Fondo**: `bg-white`
+- **Overlay**: `bg-black/50`
+
+### Sistema de Colores en Formularios
+
+Los formularios y vistas utilizan un sistema de colores coordinado para indicar la acción actual:
+
+#### Cabezales de Formularios
+
+- **Verde** (`bg-green-600`): Formularios de **Nuevo** registro
+- **Azul** (`bg-blue-600`): Formularios de **Edición** de registros existentes
+- **Gris** (`bg-gray-600`): Vistas de **Detalle** (solo lectura)
+
+#### Botones Principales
+
+Los botones principales (Guardar/Finalizar) tienen el mismo color que el cabezal del formulario:
+
+- **Verde** (`bg-green-600`): Botón "Guardar" en formularios de **Nuevo** registro
+  - Clases: `bg-green-600 border-green-600 hover:bg-green-700`
+- **Azul** (`bg-blue-600`): Botón "Guardar" en formularios de **Edición**
+  - Clases: `bg-blue-600 border-blue-600 hover:bg-blue-700`
+- **Gris** (`bg-gray-600`): Botón "Cerrar" en vistas de **Detalle**
+  - Clases: `bg-gray-600 border-gray-600 hover:bg-gray-700`
+
+#### Descripciones en Formularios
+
+Cada formulario debe incluir una breve descripción en el cabezal que explique el propósito de la acción actual (nuevo, edición o visualización).
+
+## Componentes Clave
+
+### Header
+
+```html
+<header class="bg-red-600 border-b border-red-700 px-3 sm:px-4 py-2.5 sm:py-3 flex justify-between items-center sticky top-0 z-10">
+  <h1 class="text-lg sm:text-xl font-light tracking-tight text-white">Título App</h1>
+  <div class="flex gap-2 items-center">
+    <button id="install-btn" class="... hidden">Instalar</button>
+    <button id="profile-btn" class="...">Perfil</button>
+  </div>
+</header>
+```
+
+### Botón Primario (Genérico)
+
+```html
+class="px-4 sm:px-6 py-2 bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light"
+```
+
+### Botón Guardar (Dinámico según acción)
+
+**Nuevo** (Verde):
+```html
+<button type="submit" id="save-[entity]-btn" 
+  class="flex-1 px-4 sm:px-6 py-2 bg-green-600 text-white border border-green-600 hover:bg-green-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
+  Guardar
+</button>
+```
+
+**Edición** (Azul):
+```html
+<button type="submit" id="save-[entity]-btn" 
+  class="flex-1 px-4 sm:px-6 py-2 bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
+  Guardar
+</button>
+```
+
+### Botón Cerrar (Detalle)
+
+```html
+<button id="close-[entity]-detail-btn" 
+  class="flex-1 px-4 sm:px-6 py-2 bg-gray-600 text-white border border-gray-600 hover:bg-gray-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
+  Cerrar
+</button>
+```
+
+### Botón Secundario
+
+```html
+class="px-4 sm:px-6 py-2 border border-gray-300 hover:border-red-600 hover:text-red-600 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light"
+```
+
+### Input Minimalista
+
+```html
+class="w-full px-0 py-2 border-0 border-b border-gray-300 focus:outline-none focus:border-red-600 bg-transparent text-sm sm:text-base"
+```
+
+## NRD Data Access
+
+### Instalación
+
+Incluye la librería en tu HTML usando una de estas opciones:
+
+```html
+<!-- Opción 1: jsDelivr CDN (Recomendado) -->
+<script src="https://cdn.jsdelivr.net/gh/yosbany/nrd-data-access@main/dist/nrd-data-access.js"></script>
+
+<!-- Opción 2: GitHub Pages -->
+<script src="https://yosbany.github.io/nrd-data-access/dist/nrd-data-access.js"></script>
+```
+
+### Uso Rápido
+
+```javascript
+// Inicializar (en index.html)
+const nrd = new NRDDataAccess();
+
+// Autenticación
+await nrd.auth.signIn(email, password);
+await nrd.auth.signOut();
+const user = nrd.auth.getCurrentUser();
+
+// CRUD (para todas las entidades)
+const items = await nrd.entities.getAll();
+const item = await nrd.entities.getById(id);
+const id = await nrd.entities.create(data);
+await nrd.entities.update(id, data);
+await nrd.entities.delete(id);
+
+// Tiempo real
+const unsubscribe = nrd.entities.onValue((items) => {
+  // Manejar cambios
+});
+```
+
+## Modelos de Datos Principales
+
+### Process
+```typescript
+{ 
+  name: string; 
+  areaId?: string; 
+  objective?: string; 
+  activities?: ProcessActivity[]; 
+}
+ProcessActivity: { name: string; taskId: string; roleId?: string; }
+```
+
+### Task
+```typescript
+{ 
+  name: string; 
+  description?: string; 
+  estimatedTime?: number; 
+  executionSteps?: string[]; 
+  successCriteria?: string[]; 
+  commonErrors?: string[]; 
+}
+```
+
+### Employee
+```typescript
+{ name: string; roleIds?: string[]; }
+```
+
+### Area
+```typescript
+{ name: string; description?: string; managerEmployeeId?: string; }
+```
+
+### Role
+```typescript
+{ name: string; description?: string; }
+```
+
+## Patrones de Código
+
+### Función Helper: Convertir Array a Objeto
+
+```javascript
+function convertToObject(data) {
+  if (!data) return {};
+  if (Array.isArray(data)) {
+    const obj = {};
+    data.forEach((item, index) => {
+      const id = item.id || item.key || item.$id || index.toString();
+      obj[id] = item;
+    });
+    return obj;
+  }
+  return data;
+}
+```
+
+### Cargar Entidades con Listener
+
+```javascript
+let entityListener = null;
+
+function loadEntities() {
+  const listElement = document.getElementById('entities-list');
+  if (!listElement) return;
+  
+  // Remover listener anterior
+  if (entityListener) {
+    entityListener();
+    entityListener = null;
+  }
+  
+  // Nuevo listener
+  entityListener = nrd.entities.onValue((entities) => {
+    listElement.innerHTML = '';
+    const entitiesObj = convertToObject(entities);
+    
+    if (Object.keys(entitiesObj).length === 0) {
+      listElement.innerHTML = '<p class="text-center text-gray-600 py-6 sm:py-8 text-sm sm:text-base">No hay registros</p>';
+      return;
+    }
+    
+    Object.entries(entitiesObj).forEach(([id, entity]) => {
+      const item = createEntityCard(id, entity);
+      listElement.appendChild(item);
+    });
+  });
+}
+```
+
+### Escape HTML
+
+```javascript
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+```
+
+### Manejo de Errores
+
+```javascript
+try {
+  showSpinner('Operación...');
+  await operation();
+  await showSuccess('Éxito');
+} catch (error) {
+  console.error('Error:', error);
+  await showError(error.message || 'Error');
+} finally {
+  hideSpinner();
+}
+```
+
+## Modal de Perfil
+
+### Estructura HTML
+
+```html
+<div id="profile-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-lg max-w-md w-full border border-gray-200 shadow-lg">
+    <div class="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="text-lg sm:text-xl font-light tracking-tight">Perfil de Usuario</h3>
+      <button id="close-profile-modal" class="text-gray-400 hover:text-red-600 text-xl font-light">×</button>
+    </div>
+    <div id="profile-modal-content" class="p-4 sm:p-6 space-y-4">
+      <!-- Email y Nombre (dinámico) -->
+      <!-- Enlace "Inicializar Base de Datos" (solo admin: yosbany@nrd.com) -->
+    </div>
+    <div class="p-4 sm:p-6 border-t border-gray-200">
+      <button id="profile-logout-btn" class="w-full ... bg-red-600 ...">
+        Cerrar Sesión
+      </button>
+    </div>
+  </div>
+</div>
+```
+
+### Reglas de Visibilidad
+
+- **Inicializar BD**: Solo visible si `user.email === 'yosbany@nrd.com'`
+- **Sección de confirmación**: Oculto por defecto (`hidden`)
+
+## Convenciones de Nombres
+
+- **Vistas**: `[entity]-view`
+- **Listas**: `[entity]-list`
+- **Formularios**: `[entity]-form`
+- **Detalles**: `[entity]-detail`
+- **Botones**: `[action]-[entity]-btn`
+- **Listeners**: `[entity]Listener`
+
+## Responsive Design
+
+- **Breakpoints**: `sm:640px`, `md:768px`, `lg:1024px`
+- **Padding**: `p-3 sm:p-4 md:p-6`
+- **Texto**: `text-xs sm:text-sm` o `text-sm sm:text-base`
+- **Layout**: `flex-col sm:flex-row`
+
+## Z-Index
+
+- **Header/Nav**: `z-10`
+- **Modales/Spinner**: `z-50`
+- **Tooltips**: `z-1000`
+
+## Formularios con Cabezal Dinámico
+
+### Estructura HTML del Cabezal
+
+```html
+<div id="[entity]-form-header" class="px-4 sm:px-6 py-4 sm:py-5 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-3 sm:mb-4 bg-green-600">
+  <div class="flex items-center justify-between">
+    <div>
+      <h3 id="[entity]-form-title" class="text-lg sm:text-xl font-semibold tracking-tight text-white">Nuevo [Entity]</h3>
+      <p id="[entity]-form-subtitle" class="text-sm text-white/90 mt-1">Descripción breve del formulario</p>
+    </div>
+    <button id="close-[entity]-form" class="text-white hover:text-gray-200 text-2xl font-light w-8 h-8 flex items-center justify-center hover:bg-white/20 transition-colors">×</button>
+  </div>
+</div>
+```
+
+### JavaScript: Actualizar Colores Dinámicamente
+
+```javascript
+function showEntityForm(entityId = null) {
+  const formHeader = document.getElementById('[entity]-form-header');
+  const title = document.getElementById('[entity]-form-title');
+  const subtitle = document.getElementById('[entity]-form-subtitle');
+  const saveBtn = document.getElementById('save-[entity]-btn');
+  
+  // Reset clases de color
+  formHeader.classList.remove('bg-green-600', 'bg-blue-600', 'bg-gray-600');
+  
+  if (entityId) {
+    // Modo Edición - Azul
+    title.textContent = 'Editar [Entity]';
+    subtitle.textContent = 'Modifique la información del [entity]';
+    formHeader.classList.add('bg-blue-600');
+    if (saveBtn) {
+      saveBtn.classList.remove('bg-green-600', 'border-green-600', 'hover:bg-green-700');
+      saveBtn.classList.add('bg-blue-600', 'border-blue-600', 'hover:bg-blue-700');
+    }
+  } else {
+    // Modo Nuevo - Verde
+    title.textContent = 'Nuevo [Entity]';
+    subtitle.textContent = 'Cree un nuevo [entity]';
+    formHeader.classList.add('bg-green-600');
+    if (saveBtn) {
+      saveBtn.classList.remove('bg-blue-600', 'border-blue-600', 'hover:bg-blue-700');
+      saveBtn.classList.add('bg-green-600', 'border-green-600', 'hover:bg-green-700');
+    }
+  }
+}
+
+function viewEntity(entityId) {
+  const detailHeader = document.getElementById('[entity]-detail-header');
+  // Modo Detalle - Gris
+  if (detailHeader) {
+    detailHeader.classList.remove('bg-green-600', 'bg-blue-600');
+    detailHeader.classList.add('bg-gray-600');
+  }
+}
+```
+
+## Reglas de Arquitectura
+
+1. Separación de responsabilidades por módulo
+2. Un listener activo por entidad
+3. Limpiar listeners al cambiar de vista
+4. Estados consistentes (ocultar/mostrar)
+5. Spinner en operaciones asíncronas
+6. Try/catch en todas las operaciones async
+7. Validar antes de enviar a Firebase
+8. Escapar HTML en datos renderizados
+9. Responsive desde móvil
+10. Mantener accesibilidad
+11. **Consistencia de colores**: Los botones principales siempre deben coincidir con el color del cabezal del formulario
+12. **Descripciones**: Todos los formularios deben incluir una breve descripción en el cabezal
+13. **Botones Cerrar**: Todas las vistas de detalle deben incluir un botón "Cerrar" con color gris

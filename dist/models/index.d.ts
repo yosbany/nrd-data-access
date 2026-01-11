@@ -73,7 +73,10 @@ export interface ProcessActivity {
 }
 export interface Product extends BaseEntity {
     name: string;
+    sku?: string;
     price: number;
+    cost?: number;
+    targetMargin?: number;
     active?: boolean;
 }
 export interface Role extends BaseEntity {
@@ -112,5 +115,38 @@ export interface Contract extends BaseEntity {
 export interface ContractDocument {
     name: string;
     data: string;
+}
+export interface Input extends BaseEntity {
+    name: string;
+    unit: 'kg' | 'litro' | 'unidad' | string;
+    unitPrice: number;
+    supplier?: string;
+    lastUpdated?: number;
+}
+export interface LaborRole extends BaseEntity {
+    name: string;
+    hourlyCost: number;
+}
+export interface IndirectCost extends BaseEntity {
+    name: string;
+    monthlyAmount: number;
+    prorationMethod: 'units' | 'hours';
+}
+export interface Recipe extends BaseEntity {
+    productId: string;
+    batchYield: number;
+    inputs: RecipeInput[];
+    labor: RecipeLabor[];
+    createdAt?: number;
+    active?: boolean;
+}
+export interface RecipeInput {
+    inputId: string;
+    inputType: 'input' | 'product';
+    quantity: number;
+}
+export interface RecipeLabor {
+    roleId: string;
+    hours: number;
 }
 //# sourceMappingURL=index.d.ts.map

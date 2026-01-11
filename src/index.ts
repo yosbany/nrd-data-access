@@ -13,6 +13,10 @@ import { ProductsService } from './services/products.service';
 import { RolesService } from './services/roles.service';
 import { TasksService } from './services/tasks.service';
 import { TransactionsService } from './services/transactions.service';
+import { InputsService } from './services/inputs.service';
+import { LaborRolesService } from './services/labor-roles.service';
+import { IndirectCostsService } from './services/indirect-costs.service';
+import { RecipesService } from './services/recipes.service';
 
 // Export all models
 export * from './models';
@@ -38,6 +42,10 @@ class NRDDataAccess {
   public roles: RolesService;
   public tasks: TasksService;
   public transactions: TransactionsService;
+  public inputs: InputsService;
+  public laborRoles: LaborRolesService;
+  public indirectCosts: IndirectCostsService;
+  public recipes: RecipesService;
 
   constructor() {
     // Initialize Firebase
@@ -58,6 +66,10 @@ class NRDDataAccess {
     this.roles = new RolesService();
     this.tasks = new TasksService();
     this.transactions = new TransactionsService();
+    this.inputs = new InputsService();
+    this.laborRoles = new LaborRolesService();
+    this.indirectCosts = new IndirectCostsService();
+    this.recipes = new RecipesService();
   }
 }
 

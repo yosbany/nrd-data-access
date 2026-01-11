@@ -142,6 +142,26 @@ Todos los modelos extienden `BaseEntity` que incluye:
 
 Consulta los tipos TypeScript en `src/models/index.ts` para ver la estructura completa de cada modelo. Los modelos están definidos según la estructura real de los datos en Firebase Realtime Database.
 
+## Interfaz (Documentación HTML)
+
+El archivo `index.html` incluye documentación interactiva de la librería con un sistema de colores coordinado:
+
+#### Cabezales de Formularios
+
+- **Verde** (`bg-green-600`): Formularios de **Nuevo** registro
+- **Azul** (`bg-blue-600`): Formularios de **Edición** de registros existentes
+- **Gris** (`bg-gray-600`): Vistas de **Detalle** (solo lectura)
+
+#### Botones Principales
+
+Los botones principales (Guardar) tienen el mismo color que el cabezal del formulario:
+
+- **Verde** (`bg-green-600`): Botón "Guardar" en formularios de **Nuevo** registro
+- **Azul** (`bg-blue-600`): Botón "Guardar" en formularios de **Edición**
+- **Gris** (`bg-gray-600`): Botón "Cerrar" en vistas de **Detalle**
+
+Este sistema proporciona retroalimentación visual inmediata y consistente sobre el contexto de la acción.
+
 ## Scripts Disponibles
 
 - `npm run build` - Construye la librería en modo producción

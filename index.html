@@ -3,694 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NRD Data Access - Test y Validación</title>
+    <meta name="theme-color" content="#dc2626">
+    <title>NRD Data Access Admin</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .test-result {
-            transition: all 0.3s ease;
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Force cache reload with version parameter in URL -->
+    <script>
+      (function() {
+        // Get current version from stylesheet link (this is the source of truth)
+        const stylesheet = document.querySelector('link[href*="styles.css"]');
+        const versionMatch = stylesheet ? stylesheet.href.match(/[?&]v=(\d+)/) : null;
+        
+        // Only proceed if we have a version in the stylesheet
+        if (!versionMatch) {
+          return; // No version in stylesheet, skip cache busting
         }
-        .test-result.success {
-            border-left: 4px solid #16a34a;
+        
+        const currentVersion = versionMatch[1];
+        
+        // Get version from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlVersion = urlParams.get('v');
+        
+        // If URL version doesn't match current version, reload with new version
+        // But only if URL version exists (to avoid infinite loops)
+        if (urlVersion && urlVersion !== currentVersion) {
+          // Clear service worker cache if available
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              for(let registration of registrations) {
+                registration.unregister();
+              }
+            });
+          }
+          
+          // Clear all caches
+          if ('caches' in window) {
+            caches.keys().then(function(names) {
+              for (let name of names) {
+                caches.delete(name);
         }
-        .test-result.error {
-            border-left: 4px solid #dc2626;
+            });
+          }
+          
+          // Reload with new version
+          const url = new URL(window.location.href);
+          url.searchParams.set('v', currentVersion);
+          window.location.replace(url.toString());
+        } else if (!urlVersion && currentVersion) {
+          // If no version in URL but we have one in stylesheet, add it (first load)
+          const url = new URL(window.location.href);
+          url.searchParams.set('v', currentVersion);
+          window.history.replaceState({}, '', url.toString());
         }
-        .test-result.loading {
-            border-left: 4px solid #f59e0b;
+      })();
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/gh/yosbany/nrd-data-access@main/dist/nrd-data-access.js"></script>
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+    
+    <!-- PWA Install -->
+    <script>
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const installBtn = document.getElementById('install-btn');
+        if (installBtn) installBtn.classList.remove('hidden');
+      });
+      
+      window.addEventListener('appinstalled', () => {
+        const installBtn = document.getElementById('install-btn');
+        if (installBtn) installBtn.classList.add('hidden');
+        deferredPrompt = null;
+      });
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        const installBtn = document.getElementById('install-btn');
+        if (installBtn) {
+          installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+              alert('Para instalar esta app:\n\nChrome/Edge: Menú → Instalar aplicación\nSafari: Compartir → Añadir a pantalla de inicio\nFirefox: Menú → Instalar');
+              return;
+            }
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+              installBtn.classList.add('hidden');
         }
-        pre {
-            max-height: 300px;
-            overflow-y: auto;
+            deferredPrompt = null;
+          });
         }
-        .hidden {
-            display: none !important;
-        }
-    </style>
+      });
+    </script>
 </head>
-<body class="bg-gray-50 font-sans antialiased">
-    <!-- Login Screen -->
-    <div id="login-screen" class="min-h-screen flex items-center justify-center px-4">
-        <div class="bg-white border border-gray-200 p-6 sm:p-8 rounded-lg max-w-md w-full">
-            <h1 class="text-xl sm:text-2xl font-light tracking-tight mb-6 text-center">NRD Data Access</h1>
-            <form id="login-form" class="space-y-4">
+<body class="bg-gray-100 min-h-screen font-sans antialiased">
+    <!-- Vista de Login -->
+    <div id="login-container" class="min-h-screen flex items-center justify-center px-4">
+        <div class="max-w-md w-full bg-white border border-gray-200 rounded-lg p-4 sm:p-6 md:p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-xl sm:text-2xl font-light tracking-tight text-gray-800 mb-2">NRD Data Access Admin</h1>
+                <p class="text-sm sm:text-base text-gray-600">Administración de datos</p>
+            </div>
+            
+            <form id="login-form" class="space-y-6">
                 <div>
-                    <label class="block mb-1.5 sm:mb-2 text-xs uppercase tracking-wider text-gray-600">Email</label>
-                    <input type="email" id="login-email" required 
-                        class="w-full px-0 py-2 border-0 border-b border-gray-300 focus:outline-none focus:border-red-600 bg-transparent text-sm sm:text-base">
+                    <label for="email" class="block mb-1.5 sm:mb-2 text-xs uppercase tracking-wider text-gray-600">
+                        Email
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        autocomplete="email"
+                        required
+                        class="w-full px-0 py-2 border-0 border-b border-gray-300 focus:outline-none focus:border-red-600 bg-transparent text-sm sm:text-base"
+                        placeholder="usuario@email.com"
+                    >
                 </div>
+                
                 <div>
-                    <label class="block mb-1.5 sm:mb-2 text-xs uppercase tracking-wider text-gray-600">Contraseña</label>
-                    <input type="password" id="login-password" required 
-                        class="w-full px-0 py-2 border-0 border-b border-gray-300 focus:outline-none focus:border-red-600 bg-transparent text-sm sm:text-base">
+                    <label for="password" class="block mb-1.5 sm:mb-2 text-xs uppercase tracking-wider text-gray-600">
+                        Contraseña
+                    </label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        autocomplete="current-password"
+                        required
+                        class="w-full px-0 py-2 border-0 border-b border-gray-300 focus:outline-none focus:border-red-600 bg-transparent text-sm sm:text-base"
+                        placeholder="••••••••"
+                    >
                 </div>
-                <div id="login-error" class="hidden bg-red-50 border border-red-200 p-3 rounded text-xs text-red-600"></div>
-                <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-4">
-                    <button type="submit" 
-                        class="flex-1 px-4 sm:px-6 py-2 bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
+                
+                <div id="error-message" class="hidden text-red-600 text-sm sm:text-base text-center"></div>
+                
+                <button 
+                    type="submit"
+                    class="w-full px-4 sm:px-6 py-2 bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light"
+                >
                         Iniciar Sesión
                     </button>
-                    <button type="button" id="signup-btn" 
-                        class="flex-1 px-4 sm:px-6 py-2 border border-gray-300 hover:border-red-600 hover:text-red-600 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
-                        Registrar
-                    </button>
-                </div>
             </form>
         </div>
     </div>
 
-    <!-- App Screen -->
-    <div id="app-screen" class="hidden">
-        <div class="container mx-auto px-4 py-6 sm:py-8 max-w-7xl">
+    <!-- Vista Principal -->
+    <div id="app-container" class="hidden min-h-screen">
             <!-- Header -->
-            <div class="bg-red-600 text-white p-4 sm:p-6 mb-6 rounded-lg flex items-center justify-between">
-                <div>
-                    <h1 class="text-xl sm:text-2xl font-light tracking-tight mb-2">NRD Data Access</h1>
-                    <p class="text-sm sm:text-base opacity-90">Test y Validación de Servicios y Modelos</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span id="user-email" class="text-sm opacity-90"></span>
-                    <button id="logout-btn" 
-                        class="px-3 sm:px-4 py-1.5 sm:py-2 border border-white/30 hover:border-white text-white hover:bg-white/10 transition-colors uppercase tracking-wider text-xs font-light">
-                        Salir
-                    </button>
-                </div>
+        <header class="bg-red-600 border-b border-red-700 px-3 sm:px-4 py-2.5 sm:py-3 flex justify-between items-center sticky top-0 z-10">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <img src="icon-192.png" alt="NRD Data Access Admin" class="w-8 h-8 sm:w-10 sm:h-10 rounded">
+                <h1 class="text-lg sm:text-xl font-light tracking-tight text-white">NRD Data Access Admin</h1>
             </div>
+            <div class="flex gap-2 items-center">
+                <button 
+                    id="install-btn"
+                    class="px-3 sm:px-4 py-1.5 sm:py-2 border border-white/30 hover:border-white text-white hover:bg-white/10 transition-colors uppercase tracking-wider text-xs font-light hidden"
+                >
+                    Instalar
+                </button>
+                <button 
+                    id="profile-btn"
+                    class="px-3 sm:px-4 py-1.5 sm:py-2 border border-white/30 hover:border-white text-white hover:bg-white/10 transition-colors uppercase tracking-wider text-xs font-light"
+                >
+                    Perfil
+                </button>
+            </div>
+        </header>
 
-            <!-- Navigation Tabs -->
-            <nav class="bg-white border-b border-gray-200 flex overflow-x-auto sticky top-0 z-10 mb-6">
-                <button class="nav-tab px-4 sm:px-6 py-3 border-b-2 border-red-600 text-red-600 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light" data-tab="models">
-                    Modelos
+        <!-- Entity Selector -->
+        <nav class="bg-white border-b border-gray-200 px-3 sm:px-4 py-3 sm:py-4">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Seleccionar Entidad:</label>
+                <select id="entity-selector" class="flex-1 max-w-md px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 text-sm sm:text-base">
+                    <option value="">-- Selecciona una entidad --</option>
+                </select>
+                <button 
+                    id="tools-btn"
+                    class="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors uppercase tracking-wider text-xs font-light"
+                >
+                    Herramientas
                 </button>
-                <button class="nav-tab px-4 sm:px-6 py-3 border-b-2 border-transparent text-gray-600 hover:text-red-600 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light" data-tab="services">
-                    Servicios
-                </button>
+            </div>
             </nav>
 
-            <!-- Models Tab -->
-            <div id="models-tab" class="tab-content">
-                <div class="bg-white border border-gray-200 p-4 sm:p-6 mb-6 rounded-lg">
-                    <h2 class="text-lg sm:text-xl font-light tracking-tight mb-4">Modelos de Datos</h2>
-                    <p class="text-sm text-gray-600 mb-4">Estructura de datos de todas las entidades del sistema</p>
-                    <div id="models-container" class="space-y-4"></div>
+        <!-- Main Content -->
+        <main class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <!-- Entity Content will be rendered here by app.js -->
+            <div id="entity-content">
+                <div class="text-center py-12 text-gray-500">
+                    <p class="text-lg">Selecciona una entidad para comenzar</p>
                 </div>
             </div>
+        </main>
+            </div>
 
-            <!-- Services Tab -->
-            <div id="services-tab" class="tab-content hidden">
-                <!-- Controls -->
-                <div class="bg-white border border-gray-200 p-4 sm:p-6 mb-6 rounded-lg">
-                    <h2 class="text-lg sm:text-xl font-light tracking-tight mb-4">Controles</h2>
-                    <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-4">
-                        <button id="test-all-btn" 
-                            class="px-4 sm:px-6 py-2 bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
-                            Probar Todos los Servicios
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full border border-gray-200 shadow-lg">
+            <div class="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-lg sm:text-xl font-light tracking-tight">Perfil de Usuario</h3>
+                <button id="close-profile-modal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="profile-modal-content" class="p-4 sm:p-6">
+                <!-- User data will be inserted here -->
+            </div>
+            <div class="p-4 sm:p-6 border-t border-gray-200 flex justify-end gap-2">
+                <button id="profile-logout-btn" class="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors uppercase tracking-wider text-xs font-light">
+                    Cerrar Sesión
                         </button>
-                        <button id="clear-results-btn" 
-                            class="px-4 sm:px-6 py-2 border border-gray-300 hover:border-red-600 hover:text-red-600 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
-                            Limpiar Resultados
-                        </button>
-                    </div>
-                    <div class="border-t border-gray-200 pt-4">
-                        <p class="text-xs uppercase tracking-wider text-gray-600 mb-3">Probar Servicio Individual:</p>
-                        <div class="flex flex-wrap gap-2">
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="accounts">Accounts</button>
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="areas">Areas</button>
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="categories">Categories</button>
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="clients">Clients</button>
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="contracts">Contracts</button>
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="employees">Employees</button>
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="orders">Orders</button>
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="processes">Processes</button>
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="products">Products</button>
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="roles">Roles</button>
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="tasks">Tasks</button>
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="transactions">Transactions</button>
-                            <button class="test-service-btn px-3 py-1.5 bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 text-xs uppercase tracking-wider transition-colors" data-service="companyInfo">CompanyInfo</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Results Container -->
-                <div id="results-container" class="space-y-4"></div>
             </div>
         </div>
     </div>
 
-    <!-- Include NRD Data Access Library (local compiled version) -->
-    <script src="dist/nrd-data-access.js"></script>
-
-    <script>
-        // Initialize NRD Data Access
-        const nrd = new NRDDataAccess();
-
-        // State
-        let currentUser = null;
-        let testResults = [];
-        let activeListeners = [];
-
-        // Models definitions
-        const models = {
-            Account: {
-                name: 'Account',
-                fields: [
-                    { name: 'name', type: 'string', required: true },
-                    { name: 'active', type: 'boolean', required: false },
-                    { name: 'initialBalance', type: 'number', required: false }
-                ]
-            },
-            Area: {
-                name: 'Area',
-                fields: [
-                    { name: 'name', type: 'string', required: true },
-                    { name: 'description', type: 'string', required: false },
-                    { name: 'managerEmployeeId', type: 'string', required: false }
-                ]
-            },
-            Category: {
-                name: 'Category',
-                fields: [
-                    { name: 'name', type: 'string', required: true },
-                    { name: 'type', type: "'income' | 'expense'", required: true },
-                    { name: 'active', type: 'boolean', required: false }
-                ]
-            },
-            Client: {
-                name: 'Client',
-                fields: [
-                    { name: 'name', type: 'string', required: true },
-                    { name: 'address', type: 'string', required: false },
-                    { name: 'phone', type: 'string', required: false },
-                    { name: 'description', type: 'string', required: false },
-                    { name: 'preferredPrices', type: 'PreferredPrice[]', required: false }
-                ],
-                nested: {
-                    PreferredPrice: [
-                        { name: 'productId', type: 'string', required: true },
-                        { name: 'type', type: "'fijo' | 'porcentual'", required: true },
-                        { name: 'price', type: 'number', required: false, note: 'Precio fijo o precio calculado (si es porcentual)' },
-                        { name: 'percentage', type: 'number', required: false, note: 'Porcentaje de descuento (solo si type es porcentual)' }
-                    ]
-                }
-            },
-            Contract: {
-                name: 'Contract',
-                fields: [
-                    { name: 'name', type: 'string', required: true },
-                    { name: 'description', type: 'string', required: false },
-                    { name: 'importantData', type: '{ [key: string]: string; }', required: false },
-                    { name: 'documents', type: 'ContractDocument[]', required: false }
-                ],
-                nested: {
-                    ContractDocument: [
-                        { name: 'name', type: 'string', required: true },
-                        { name: 'data', type: 'string (data URL)', required: true }
-                    ]
-                }
-            },
-            CompanyInfo: {
-                name: 'CompanyInfo',
-                fields: [
-                    { name: 'address', type: 'string', required: false },
-                    { name: 'email', type: 'string', required: false },
-                    { name: 'legalName', type: 'string', required: false },
-                    { name: 'mission', type: 'string', required: false },
-                    { name: 'mobile', type: 'string', required: false },
-                    { name: 'phone', type: 'string', required: false },
-                    { name: 'rut', type: 'string', required: false },
-                    { name: 'tradeName', type: 'string', required: false },
-                    { name: 'vision', type: 'string', required: false }
-                ],
-                note: 'Objeto único, no es una colección'
-            },
-            Employee: {
-                name: 'Employee',
-                fields: [
-                    { name: 'name', type: 'string', required: true },
-                    { name: 'roleIds', type: 'string[]', required: false }
-                ]
-            },
-            Order: {
-                name: 'Order',
-                fields: [
-                    { name: 'clientId', type: 'string', required: true },
-                    { name: 'clientName', type: 'string', required: false },
-                    { name: 'status', type: 'string', required: true },
-                    { name: 'total', type: 'number', required: true },
-                    { name: 'createdAt', type: 'number', required: false },
-                    { name: 'deliveryDate', type: 'number', required: false },
-                    { name: 'items', type: 'OrderItem[]', required: false }
-                ],
-                nested: {
-                    OrderItem: [
-                        { name: 'productId', type: 'string', required: true },
-                        { name: 'productName', type: 'string', required: false },
-                        { name: 'quantity', type: 'number', required: true },
-                        { name: 'price', type: 'number', required: true }
-                    ]
-                }
-            },
-            Process: {
-                name: 'Process',
-                fields: [
-                    { name: 'name', type: 'string', required: true },
-                    { name: 'areaId', type: 'string', required: false },
-                    { name: 'objective', type: 'string', required: false },
-                    { name: 'taskIds', type: 'string[]', required: false },
-                    { name: 'activities', type: 'ProcessActivity[]', required: false }
-                ],
-                nested: {
-                    ProcessActivity: [
-                        { name: 'name', type: 'string', required: true },
-                        { name: 'taskId', type: 'string', required: true },
-                        { name: 'roleId', type: 'string', required: false }
-                    ]
-                }
-            },
-            Product: {
-                name: 'Product',
-                fields: [
-                    { name: 'name', type: 'string', required: true },
-                    { name: 'price', type: 'number', required: true },
-                    { name: 'active', type: 'boolean', required: false }
-                ]
-            },
-            Role: {
-                name: 'Role',
-                fields: [
-                    { name: 'name', type: 'string', required: true }
-                ]
-            },
-            Task: {
-                name: 'Task',
-                fields: [
-                    { name: 'name', type: 'string', required: true },
-                    { name: 'description', type: 'string', required: false },
-                    { name: 'processId', type: 'string', required: false },
-                    { name: 'order', type: 'number', required: false },
-                    { name: 'assignedEmployeeId', type: 'string', required: false },
-                    { name: 'estimatedTime', type: 'number', required: false },
-                    { name: 'executionSteps', type: 'string[]', required: false },
-                    { name: 'successCriteria', type: 'string[]', required: false },
-                    { name: 'commonErrors', type: 'string[]', required: false }
-                ],
-                note: 'Los roles y tipo de rol se deducen de los procesos y sus flujos'
-            },
-            Transaction: {
-                name: 'Transaction',
-                fields: [
-                    { name: 'type', type: "'income' | 'expense'", required: true },
-                    { name: 'accountId', type: 'string', required: true },
-                    { name: 'accountName', type: 'string', required: false },
-                    { name: 'amount', type: 'number', required: true },
-                    { name: 'categoryId', type: 'string', required: false },
-                    { name: 'categoryName', type: 'string', required: false },
-                    { name: 'description', type: 'string', required: false },
-                    { name: 'date', type: 'number', required: true },
-                    { name: 'createdAt', type: 'number', required: false }
-                ]
-            }
-        };
-
-        // Utility functions
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function formatJSON(obj) {
-            try {
-                return JSON.stringify(obj, null, 2);
-            } catch (e) {
-                return String(obj);
-            }
-        }
-
-        // Authentication
-        function showLoginScreen() {
-            document.getElementById('login-screen').classList.remove('hidden');
-            document.getElementById('app-screen').classList.add('hidden');
-        }
-
-        function showAppScreen() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('app-screen').classList.remove('hidden');
-            if (currentUser) {
-                document.getElementById('user-email').textContent = currentUser.email;
-            }
-        }
-
-        // Listen to auth state changes
-        nrd.auth.onAuthStateChanged((user) => {
-            currentUser = user;
-            if (user) {
-                showAppScreen();
-                loadModels();
-            } else {
-                showLoginScreen();
-            }
-        });
-
-        // Login form
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const errorDiv = document.getElementById('login-error');
-
-            try {
-                errorDiv.classList.add('hidden');
-                await nrd.auth.signIn(email, password);
-            } catch (error) {
-                errorDiv.textContent = error.message || 'Error al iniciar sesión';
-                errorDiv.classList.remove('hidden');
-            }
-        });
-
-        // Signup
-        document.getElementById('signup-btn').addEventListener('click', async () => {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const errorDiv = document.getElementById('login-error');
-
-            if (!email || !password) {
-                errorDiv.textContent = 'Por favor completa email y contraseña';
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-
-            try {
-                errorDiv.classList.add('hidden');
-                await nrd.auth.signUp(email, password);
-            } catch (error) {
-                errorDiv.textContent = error.message || 'Error al registrar usuario';
-                errorDiv.classList.remove('hidden');
-            }
-        });
-
-        // Logout
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            try {
-                await nrd.auth.signOut();
-            } catch (error) {
-                console.error('Error al cerrar sesión:', error);
-            }
-        });
-
-        // Navigation tabs
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.tab;
-                
-                // Update tabs
-                document.querySelectorAll('.nav-tab').forEach(t => {
-                    t.classList.remove('border-red-600', 'text-red-600');
-                    t.classList.add('border-transparent', 'text-gray-600');
-                });
-                tab.classList.remove('border-transparent', 'text-gray-600');
-                tab.classList.add('border-red-600', 'text-red-600');
-
-                // Update content
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.add('hidden');
-                });
-                document.getElementById(`${tabName}-tab`).classList.remove('hidden');
-            });
-        });
-
-        // Load and display models
-        function loadModels() {
-            const container = document.getElementById('models-container');
-            container.innerHTML = '';
-
-            Object.values(models).forEach(model => {
-                const modelDiv = document.createElement('div');
-                modelDiv.className = 'border border-gray-200 p-4 rounded-lg';
-
-                let nestedHtml = '';
-                if (model.nested) {
-                    nestedHtml = '<div class="mt-4 pt-4 border-t border-gray-200"><p class="text-xs uppercase tracking-wider text-gray-600 mb-2">Modelos Anidados:</p>';
-                    Object.entries(model.nested).forEach(([nestedName, nestedFields]) => {
-                        nestedHtml += `<div class="ml-4 mb-3"><p class="text-sm font-medium text-gray-700 mb-1">${nestedName}:</p><ul class="list-disc list-inside text-xs text-gray-600 space-y-1">`;
-                        nestedFields.forEach(field => {
-                            nestedHtml += `<li>${escapeHtml(field.name)}: <code class="bg-gray-100 px-1 rounded">${escapeHtml(field.type)}</code> ${field.required ? '<span class="text-red-600">*</span>' : ''}</li>`;
-                        });
-                        nestedHtml += '</ul></div>';
-                    });
-                    nestedHtml += '</div>';
-                }
-
-                modelDiv.innerHTML = `
-                    <h3 class="text-base sm:text-lg font-light mb-3">${escapeHtml(model.name)}</h3>
-                    ${model.note ? `<p class="text-xs text-gray-500 mb-3 italic">${escapeHtml(model.note)}</p>` : ''}
-                    <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
-                        ${model.fields.map(field => 
-                            `<li>${escapeHtml(field.name)}: <code class="bg-gray-100 px-1 rounded">${escapeHtml(field.type)}</code> ${field.required ? '<span class="text-red-600">*</span>' : '<span class="text-gray-400">(opcional)</span>'}</li>`
-                        ).join('')}
-                    </ul>
-                    ${nestedHtml}
-                `;
-                container.appendChild(modelDiv);
-            });
-        }
-
-        // Test functions (same as before)
-        function addResult(serviceName, methodName, status, data, error = null) {
-            const result = {
-                id: Date.now() + Math.random(),
-                service: serviceName,
-                method: methodName,
-                status: status,
-                data: data,
-                error: error,
-                timestamp: new Date().toLocaleTimeString()
-            };
-            testResults.push(result);
-            renderResult(result);
-        }
-
-        function renderResult(result) {
-            const container = document.getElementById('results-container');
-            const resultDiv = document.createElement('div');
-            resultDiv.className = `test-result bg-white border border-gray-200 p-4 sm:p-6 rounded-lg ${result.status}`;
-            resultDiv.id = `result-${result.id}`;
-            resultDiv.setAttribute('data-service', result.service);
-
-            const statusIcon = result.status === 'success' ? '✓' : result.status === 'error' ? '✗' : '⟳';
-            const statusColor = result.status === 'success' ? 'text-green-600' : result.status === 'error' ? 'text-red-600' : 'text-yellow-600';
-
-            resultDiv.innerHTML = `
-                <div class="flex items-center justify-between mb-3">
-                    <div>
-                        <h3 class="text-base sm:text-lg font-light">
-                            <span class="${statusColor} mr-2">${statusIcon}</span>
-                            ${escapeHtml(result.service)}.${escapeHtml(result.method)}()
-                        </h3>
-                        <p class="text-xs text-gray-500 mt-1">${result.timestamp}</p>
+    <!-- Generic Modal for CRUD operations -->
+    <div id="crud-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] border border-gray-200 shadow-lg modal-scroll">
+            <div id="crud-modal-header" class="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+                <h3 id="crud-modal-title" class="text-lg sm:text-xl font-light tracking-tight"></h3>
+                <button id="close-crud-modal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                        </button>
+                    </div>
+            <div id="crud-modal-content" class="p-4 sm:p-6">
+                <!-- Form content will be inserted here -->
+            </div>
+            <div id="crud-modal-footer" class="p-4 sm:p-6 border-t border-gray-200 flex justify-end gap-2 sticky bottom-0 bg-white">
+                <!-- Buttons will be inserted here -->
+                        </div>
                     </div>
                 </div>
-                ${result.error ? `
-                    <div class="bg-red-50 border border-red-200 p-3 rounded mb-3">
-                        <p class="text-sm text-red-800 font-medium">Error:</p>
-                        <p class="text-xs text-red-600 mt-1">${escapeHtml(result.error)}</p>
-                    </div>
-                ` : ''}
-                ${result.data !== null ? `
-                    <div class="mt-3">
-                        <p class="text-xs uppercase tracking-wider text-gray-600 mb-2">Resultado:</p>
-                        <pre class="bg-gray-50 border border-gray-200 p-3 rounded text-xs overflow-x-auto">${escapeHtml(formatJSON(result.data))}</pre>
-                    </div>
-                ` : ''}
-            `;
 
-            container.appendChild(resultDiv);
-            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full border border-gray-200 shadow-lg">
+            <div class="p-4 sm:p-6 border-b border-gray-200">
+                <h3 id="confirm-modal-title" class="text-lg sm:text-xl font-light tracking-tight text-gray-800">Confirmar Acción</h3>
+            </div>
+            <div class="p-4 sm:p-6">
+                <p id="confirm-modal-message" class="text-sm sm:text-base text-gray-600"></p>
+            </div>
+            <div class="p-4 sm:p-6 border-t border-gray-200 flex justify-end gap-2">
+                <button 
+                    id="confirm-modal-cancel"
+                    class="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors uppercase tracking-wider text-xs font-light"
+                >
+                    Cancelar
+                </button>
+                <button 
+                    id="confirm-modal-confirm"
+                    class="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors uppercase tracking-wider text-xs font-light"
+                >
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
 
-        async function testServiceGetAll(serviceName, service) {
-            addResult(serviceName, 'getAll', 'loading', null);
-            try {
-                const data = await service.getAll();
-                addResult(serviceName, 'getAll', 'success', data);
-                return data;
-            } catch (error) {
-                addResult(serviceName, 'getAll', 'error', null, error.message);
-                throw error;
+    <!-- Close CRUD Modal Handler -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const closeCrudModalBtn = document.getElementById('close-crud-modal');
+        if (closeCrudModalBtn) {
+          closeCrudModalBtn.addEventListener('click', () => {
+            const modal = document.getElementById('crud-modal');
+            if (modal) {
+              modal.classList.add('hidden');
             }
-        }
-
-        async function testServiceGetById(serviceName, service, testId = null) {
-            try {
-                const all = await service.getAll();
-                if (all && all.length > 0) {
-                    const id = testId || all[0].id;
-                    addResult(serviceName, 'getById', 'loading', null);
-                    try {
-                        const data = await service.getById(id);
-                        addResult(serviceName, 'getById', 'success', data);
-                        return data;
-                    } catch (error) {
-                        addResult(serviceName, 'getById', 'error', null, error.message);
-                    }
-                } else {
-                    addResult(serviceName, 'getById', 'error', null, 'No hay registros para probar getById');
-                }
-            } catch (error) {
-                addResult(serviceName, 'getById', 'error', null, 'Error al obtener lista: ' + error.message);
-            }
-        }
-
-        function testServiceOnValue(serviceName, service) {
-            addResult(serviceName, 'onValue', 'loading', null);
-            const unsubscribe = service.onValue((data) => {
-                addResult(serviceName, 'onValue', 'success', data);
-                setTimeout(() => {
-                    unsubscribe();
-                    activeListeners = activeListeners.filter(l => l !== unsubscribe);
-                }, 1000);
-            });
-            activeListeners.push(unsubscribe);
-        }
-
-        function testServiceOnValueById(serviceName, service) {
-            service.getAll().then(all => {
-                if (all && all.length > 0) {
-                    const id = all[0].id;
-                    addResult(serviceName, 'onValueById', 'loading', null);
-                    const unsubscribe = service.onValueById(id, (data) => {
-                        addResult(serviceName, 'onValueById', 'success', data);
-                        setTimeout(() => {
-                            unsubscribe();
-                            activeListeners = activeListeners.filter(l => l !== unsubscribe);
-                        }, 1000);
-                    });
-                    activeListeners.push(unsubscribe);
-                } else {
-                    addResult(serviceName, 'onValueById', 'error', null, 'No hay registros para probar onValueById');
-                }
-            }).catch(error => {
-                addResult(serviceName, 'onValueById', 'error', null, 'Error al obtener lista: ' + error.message);
-            });
-        }
-
-        async function testCompanyInfoGet(serviceName, service) {
-            addResult(serviceName, 'get', 'loading', null);
-            try {
-                const data = await service.get();
-                addResult(serviceName, 'get', 'success', data);
-                return data;
-            } catch (error) {
-                addResult(serviceName, 'get', 'error', null, error.message);
-            }
-        }
-
-        async function testAllServices() {
-            document.getElementById('results-container').innerHTML = '';
-            testResults = [];
-            activeListeners.forEach(unsub => unsub());
-            activeListeners = [];
-
-            addResult('Sistema', 'Inicio', 'loading', 'Iniciando pruebas de todos los servicios...');
-
-            const services = [
-                { name: 'accounts', service: nrd.accounts },
-                { name: 'areas', service: nrd.areas },
-                { name: 'categories', service: nrd.categories },
-                { name: 'clients', service: nrd.clients },
-                { name: 'contracts', service: nrd.contracts },
-                { name: 'employees', service: nrd.employees },
-                { name: 'orders', service: nrd.orders },
-                { name: 'processes', service: nrd.processes },
-                { name: 'products', service: nrd.products },
-                { name: 'roles', service: nrd.roles },
-                { name: 'tasks', service: nrd.tasks },
-                { name: 'transactions', service: nrd.transactions }
-            ];
-
-            for (const { name, service } of services) {
-                try {
-                    await testServiceGetAll(name, service);
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                    await testServiceGetById(name, service);
-                    await new Promise(resolve => setTimeout(resolve, 200));
-                    testServiceOnValue(name, service);
-                    await new Promise(resolve => setTimeout(resolve, 1200));
-                    testServiceOnValueById(name, service);
-                    await new Promise(resolve => setTimeout(resolve, 1200));
-                } catch (error) {
-                    console.error(`Error testing ${name}:`, error);
-                }
+          });
             }
 
-            try {
-                await testCompanyInfoGet('companyInfo', nrd.companyInfo);
-            } catch (error) {
-                console.error('Error testing companyInfo:', error);
+        // Close modal on outside click
+        const crudModal = document.getElementById('crud-modal');
+        if (crudModal) {
+          crudModal.addEventListener('click', (e) => {
+            if (e.target === crudModal) {
+              crudModal.classList.add('hidden');
             }
-
-            addResult('Sistema', 'Fin', 'success', 'Todas las pruebas completadas');
+          });
         }
+      });
+    </script>
 
-        async function testIndividualService(serviceName) {
-            const serviceMap = {
-                'accounts': nrd.accounts,
-                'areas': nrd.areas,
-                'categories': nrd.categories,
-                'clients': nrd.clients,
-                'contracts': nrd.contracts,
-                'employees': nrd.employees,
-                'orders': nrd.orders,
-                'processes': nrd.processes,
-                'products': nrd.products,
-                'roles': nrd.roles,
-                'tasks': nrd.tasks,
-                'transactions': nrd.transactions,
-                'companyInfo': nrd.companyInfo
-            };
-
-            const service = serviceMap[serviceName];
-            if (!service) {
-                addResult(serviceName, 'Error', 'error', null, 'Servicio no encontrado');
-                return;
-            }
-
-            const existingResults = document.querySelectorAll(`[data-service="${serviceName}"]`);
-            existingResults.forEach(el => el.remove());
-
-            if (serviceName === 'companyInfo') {
-                await testCompanyInfoGet(serviceName, service);
-            } else {
-                await testServiceGetAll(serviceName, service);
-                await new Promise(resolve => setTimeout(resolve, 200));
-                await testServiceGetById(serviceName, service);
-                await new Promise(resolve => setTimeout(resolve, 200));
-                testServiceOnValue(serviceName, service);
-                await new Promise(resolve => setTimeout(resolve, 1200));
-                testServiceOnValueById(serviceName, service);
-                await new Promise(resolve => setTimeout(resolve, 1200));
-            }
-        }
-
-        // Event listeners
-        document.getElementById('test-all-btn').addEventListener('click', testAllServices);
-        document.getElementById('clear-results-btn').addEventListener('click', () => {
-            document.getElementById('results-container').innerHTML = '';
-            testResults = [];
-            activeListeners.forEach(unsub => unsub());
-            activeListeners = [];
-        });
-
-        document.querySelectorAll('.test-service-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const serviceName = btn.dataset.service;
-                testIndividualService(serviceName);
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
             });
         });
-
-        // Initialize
-        console.log('NRD Data Access inicializado:', nrd);
+      }
     </script>
 </body>
 </html>
-
