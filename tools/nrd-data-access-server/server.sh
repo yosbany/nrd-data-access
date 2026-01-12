@@ -5,7 +5,7 @@
 
 PORT=8004
 
-# Obtener el directorio raíz del proyecto (dos niveles arriba de tools/local-server)
+# Obtener el directorio raíz del proyecto (dos niveles arriba de tools/nrd-data-access-server)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
@@ -42,7 +42,7 @@ start_server() {
     SERVER_PID=$!
     echo "✅ Servidor iniciado (PID: $SERVER_PID)"
     echo "   Accede a: http://localhost:$PORT"
-    echo "   Para detener: ./tools/local-server/server.sh"
+    echo "   Para detener: ./tools/nrd-data-access-server/server.sh"
     
     # Esperar un momento para que el servidor esté listo
     sleep 1
