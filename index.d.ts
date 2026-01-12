@@ -16,6 +16,9 @@ import { InputsService } from './services/inputs.service';
 import { LaborRolesService } from './services/labor-roles.service';
 import { IndirectCostsService } from './services/indirect-costs.service';
 import { RecipesService } from './services/recipes.service';
+import { ShiftsService } from './services/shifts.service';
+import { ShiftMovementsService } from './services/shift-movements.service';
+import { ShiftIncidentsService } from './services/shift-incidents.service';
 export * from './models';
 export { AuthService } from './services/auth.service';
 export { BaseService } from './services/base.service';
@@ -39,6 +42,9 @@ declare class NRDDataAccess {
     laborRoles: LaborRolesService;
     indirectCosts: IndirectCostsService;
     recipes: RecipesService;
+    shifts: ShiftsService;
+    shiftMovements: ShiftMovementsService;
+    shiftIncidents: ShiftIncidentsService;
     constructor();
 }
 export default NRDDataAccess;
