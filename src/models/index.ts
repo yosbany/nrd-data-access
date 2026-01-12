@@ -192,3 +192,62 @@ export interface RecipeLabor {
   hours: number; // Cantidad de horas
   // NO se guardan snapshots - se usa costo hora actual en tiempo real
 }
+
+// Cash Breakdown model (Desglose de efectivo)
+export interface CashBreakdown {
+  bills10000?: number;
+  bills5000?: number;
+  bills2000?: number;
+  bills1000?: number;
+  bills500?: number;
+  bills100?: number;
+  coins500?: number;
+  coins100?: number;
+  coins50?: number;
+  coins10?: number;
+  coins5?: number;
+  coins1?: number;
+}
+
+// Shift model (Turno)
+export interface Shift extends BaseEntity {
+  date: string; // YYYY-MM-DD format
+  shift: 'mañana' | 'tarde';
+  cashierName: string;
+  boxes: {
+    [boxKey: string]: {
+      initialFund?: number;
+      initialFundBreakdown?: CashBreakdown;
+      collectedCash?: number;
+      collectedCashBreakdown?: CashBreakdown;
+    };
+  };
+  closed?: boolean;
+  closedAt?: number;
+  finalObservations?: string;
+  createdAt?: number;
+  updatedAt?: number;
+}
+
+// Shift Movement model (Movimiento de Turno)
+export interface ShiftMovement extends BaseEntity {
+  shiftId: string;
+  box: 'mostrador' | 'banca-juegos';
+  type: 'ingreso' | 'egreso';
+  amount: number;
+  breakdown?: CashBreakdown;
+  reason?: string;
+  moment: 'inicio' | 'durante' | 'cierre';
+  createdAt?: number;
+}
+
+// Shift Incident model (Incidente de Turno)
+export interface ShiftIncident extends BaseEntity {
+  shiftId: string;
+  type: string;
+  box?: 'mostrador' | 'banca-juegos' | 'ambas' | 'no-aplica';
+  description: string;
+  moment: 'inicio' | 'durante' | 'cierre';
+  amount?: number;
+  createdAt?: number;
+}

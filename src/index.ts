@@ -17,6 +17,9 @@ import { InputsService } from './services/inputs.service';
 import { LaborRolesService } from './services/labor-roles.service';
 import { IndirectCostsService } from './services/indirect-costs.service';
 import { RecipesService } from './services/recipes.service';
+import { ShiftsService } from './services/shifts.service';
+import { ShiftMovementsService } from './services/shift-movements.service';
+import { ShiftIncidentsService } from './services/shift-incidents.service';
 
 // Export all models
 export * from './models';
@@ -46,6 +49,9 @@ class NRDDataAccess {
   public laborRoles: LaborRolesService;
   public indirectCosts: IndirectCostsService;
   public recipes: RecipesService;
+  public shifts: ShiftsService;
+  public shiftMovements: ShiftMovementsService;
+  public shiftIncidents: ShiftIncidentsService;
 
   constructor() {
     // Initialize Firebase
@@ -70,6 +76,9 @@ class NRDDataAccess {
     this.laborRoles = new LaborRolesService();
     this.indirectCosts = new IndirectCostsService();
     this.recipes = new RecipesService();
+    this.shifts = new ShiftsService();
+    this.shiftMovements = new ShiftMovementsService();
+    this.shiftIncidents = new ShiftIncidentsService();
   }
 }
 
