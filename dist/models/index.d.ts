@@ -43,6 +43,7 @@ export interface CompanyInfo {
 export interface Employee extends BaseEntity {
     name: string;
     roleIds?: string[];
+    startDate?: number;
 }
 export interface Order extends BaseEntity {
     clientId: string;
@@ -218,11 +219,11 @@ export interface ShiftIncident extends BaseEntity {
 }
 export interface License extends BaseEntity {
     employeeId: string;
-    days: number;
-    amount: number;
+    daysTaken: number;
     startDate?: number;
     endDate?: number;
     year: number;
+    month?: number;
     notes?: string;
     createdAt?: number;
 }
@@ -230,7 +231,9 @@ export interface Salary extends BaseEntity {
     employeeId: string;
     year: number;
     month: number;
-    dailyWage: number;
+    type: 'daily' | 'monthly';
+    dailyWage?: number;
+    monthlySalary?: number;
     extras?: number;
     baseSalary30Days: number;
     notes?: string;
@@ -240,9 +243,13 @@ export interface Vacation extends BaseEntity {
     employeeId: string;
     amount: number;
     year: number;
+    daysAccumulated: number;
+    daysTaken: number;
+    daysRemaining: number;
     paidDate?: number;
     notes?: string;
     createdAt?: number;
+    updatedAt?: number;
 }
 export interface Aguinaldo extends BaseEntity {
     employeeId: string;
@@ -251,5 +258,6 @@ export interface Aguinaldo extends BaseEntity {
     paidDate?: number;
     notes?: string;
     createdAt?: number;
+    updatedAt?: number;
 }
 //# sourceMappingURL=index.d.ts.map

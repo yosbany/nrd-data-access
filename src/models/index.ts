@@ -57,6 +57,7 @@ export interface CompanyInfo {
 export interface Employee extends BaseEntity {
   name: string;
   roleIds?: string[];
+  startDate?: number; // Fecha de ingreso (timestamp) - usada para calcular días de licencia
 }
 
 // Order model
@@ -268,14 +269,14 @@ export interface ShiftIncident extends BaseEntity {
   createdAt?: number;
 }
 
-// License model (Licencia)
+// License model (Licencia - Días Tomados)
 export interface License extends BaseEntity {
   employeeId: string;        // ID del empleado
-  days: number;              // Días de licencia
-  amount: number;            // Monto de la licencia
+  daysTaken: number;        // Días de licencia tomados (se descuentan del saldo acumulado)
   startDate?: number;        // Fecha de inicio (timestamp)
   endDate?: number;          // Fecha de fin (timestamp)
   year: number;              // Año de la licencia (ej: 2025)
+  month?: number;            // Mes (1-12) - opcional, para registrar mes específico
   notes?: string;            // Notas adicionales
   createdAt?: number;
 }
@@ -285,29 +286,36 @@ export interface Salary extends BaseEntity {
   employeeId: string;        // ID del empleado
   year: number;              // Año (ej: 2025)
   month: number;             // Mes (1-12)
-  dailyWage: number;         // Jornal diario
+  type: 'daily' | 'monthly'; // Tipo: 'daily' = jornal diario, 'monthly' = salario completo
+  dailyWage?: number;        // Jornal diario (si type === 'daily')
+  monthlySalary?: number;    // Salario completo mensual (si type === 'monthly')
   extras?: number;           // Extras/periodos (opcional)
-  baseSalary30Days: number;  // Salario base 30 días (calculado)
+  baseSalary30Days: number;  // Salario base 30 días (calculado automáticamente)
   notes?: string;            // Notas adicionales
   createdAt?: number;
 }
 
-// Vacation model (Salario Vacacional)
+// Vacation model (Salario Vacacional) - Calculado automáticamente
 export interface Vacation extends BaseEntity {
   employeeId: string;        // ID del empleado
-  amount: number;            // Monto del salario vacacional
+  amount: number;            // Monto del salario vacacional (calculado automáticamente)
   year: number;              // Año (ej: 2025)
+  daysAccumulated: number;   // Días de vacaciones acumulados (calculado)
+  daysTaken: number;        // Días de vacaciones tomados (suma de licencias)
+  daysRemaining: number;    // Días restantes (acumulados - tomados)
   paidDate?: number;         // Fecha de pago (timestamp, opcional)
   notes?: string;            // Notas adicionales
   createdAt?: number;
+  updatedAt?: number;        // Última actualización del cálculo
 }
 
-// Aguinaldo model
+// Aguinaldo model - Calculado automáticamente
 export interface Aguinaldo extends BaseEntity {
   employeeId: string;        // ID del empleado
-  amount: number;            // Monto del aguinaldo
+  amount: number;            // Monto del aguinaldo (calculado automáticamente)
   year: number;              // Año (ej: 2025)
   paidDate?: number;         // Fecha de pago (timestamp, opcional)
   notes?: string;            // Notas adicionales
   createdAt?: number;
+  updatedAt?: number;        // Última actualización del cálculo
 }
