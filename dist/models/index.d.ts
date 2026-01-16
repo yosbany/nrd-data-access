@@ -55,7 +55,9 @@ export interface Order extends BaseEntity {
 }
 export interface OrderItem {
     productId: string;
+    variantId?: string;
     productName?: string;
+    variantName?: string;
     quantity: number;
     price: number;
 }
@@ -78,6 +80,19 @@ export interface Product extends BaseEntity {
     cost?: number;
     targetMargin?: number;
     active?: boolean;
+    variants?: ProductVariant[];
+}
+export interface ProductVariant {
+    id: string;
+    name: string;
+    skuSuffix?: string;
+    price: number;
+    cost?: number;
+    targetMargin?: number;
+    active?: boolean;
+    attributes?: {
+        [key: string]: string;
+    };
 }
 export interface Role extends BaseEntity {
     name: string;
@@ -134,6 +149,7 @@ export interface IndirectCost extends BaseEntity {
 }
 export interface Recipe extends BaseEntity {
     productId: string;
+    variantId?: string;
     batchYield: number;
     inputs: RecipeInput[];
     labor: RecipeLabor[];
@@ -194,10 +210,46 @@ export interface ShiftMovement extends BaseEntity {
 export interface ShiftIncident extends BaseEntity {
     shiftId: string;
     type: string;
-    box?: 'mostrador' | 'banca-juegos' | 'ambas' | 'no-aplica';
+    customType?: string;
+    box?: 'mostrador' | 'banca-juegos' | 'otros';
     description: string;
-    moment: 'inicio' | 'durante' | 'cierre';
     amount?: number;
+    createdAt?: number;
+}
+export interface License extends BaseEntity {
+    employeeId: string;
+    days: number;
+    amount: number;
+    startDate?: number;
+    endDate?: number;
+    year: number;
+    notes?: string;
+    createdAt?: number;
+}
+export interface Salary extends BaseEntity {
+    employeeId: string;
+    year: number;
+    month: number;
+    dailyWage: number;
+    extras?: number;
+    baseSalary30Days: number;
+    notes?: string;
+    createdAt?: number;
+}
+export interface Vacation extends BaseEntity {
+    employeeId: string;
+    amount: number;
+    year: number;
+    paidDate?: number;
+    notes?: string;
+    createdAt?: number;
+}
+export interface Aguinaldo extends BaseEntity {
+    employeeId: string;
+    amount: number;
+    year: number;
+    paidDate?: number;
+    notes?: string;
     createdAt?: number;
 }
 //# sourceMappingURL=index.d.ts.map

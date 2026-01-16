@@ -19,6 +19,10 @@ import { RecipesService } from './services/recipes.service';
 import { ShiftsService } from './services/shifts.service';
 import { ShiftMovementsService } from './services/shift-movements.service';
 import { ShiftIncidentsService } from './services/shift-incidents.service';
+import { LicensesService } from './services/licenses.service';
+import { SalariesService } from './services/salaries.service';
+import { VacationsService } from './services/vacations.service';
+import { AguinaldoService } from './services/aguinaldo.service';
 export * from './models';
 export { AuthService } from './services/auth.service';
 export { BaseService } from './services/base.service';
@@ -45,6 +49,10 @@ declare class NRDDataAccess {
     shifts: ShiftsService;
     shiftMovements: ShiftMovementsService;
     shiftIncidents: ShiftIncidentsService;
+    licenses: LicensesService;
+    salaries: SalariesService;
+    vacations: VacationsService;
+    aguinaldo: AguinaldoService;
     constructor();
 }
 export default NRDDataAccess;

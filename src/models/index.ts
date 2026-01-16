@@ -72,7 +72,9 @@ export interface Order extends BaseEntity {
 
 export interface OrderItem {
   productId: string;
+  variantId?: string; // ID de la variante seleccionada (opcional)
   productName?: string;
+  variantName?: string; // Nombre de la variante (para mostrar en pedidos)
   quantity: number;
   price: number;
 }
@@ -100,6 +102,19 @@ export interface Product extends BaseEntity {
   cost?: number; // Costo calculado (se actualiza automáticamente)
   targetMargin?: number; // Margen objetivo (porcentaje, ej: 30 = 30%)
   active?: boolean;
+  variants?: ProductVariant[]; // Variantes del producto (tamaños, sabores, colores, etc.)
+}
+
+// ProductVariant model
+export interface ProductVariant {
+  id: string; // ID único de la variante (generado automáticamente)
+  name: string; // Nombre de la variante (ej: "Pequeña", "Chocolate", "Rojo")
+  skuSuffix?: string; // Sufijo del SKU (se combina con SKU del padre: <SKU Padre>_<skuSuffix>)
+  price: number; // Precio de la variante
+  cost?: number; // Costo específico (opcional, se calcula de la receta si existe)
+  targetMargin?: number; // Margen objetivo específico (opcional, hereda del padre si no se especifica)
+  active?: boolean; // Si la variante está activa
+  attributes?: { [key: string]: string }; // Atributos flexibles (ej: { "tamaño": "grande", "sabor": "chocolate" })
 }
 
 // Role model
@@ -173,6 +188,7 @@ export interface IndirectCost extends BaseEntity {
 // Recipe model (Receta/Lote)
 export interface Recipe extends BaseEntity {
   productId: string; // Producto asociado
+  variantId?: string; // ID de la variante (si existe, la receta es específica para esa variante)
   batchYield: number; // Cantidad de unidades que rinde el lote
   inputs: RecipeInput[]; // Insumos utilizados
   labor: RecipeLabor[]; // Mano de obra aplicada
@@ -245,9 +261,53 @@ export interface ShiftMovement extends BaseEntity {
 export interface ShiftIncident extends BaseEntity {
   shiftId: string;
   type: string;
-  box?: 'mostrador' | 'banca-juegos' | 'ambas' | 'no-aplica';
+  customType?: string;
+  box?: 'mostrador' | 'banca-juegos' | 'otros';
   description: string;
-  moment: 'inicio' | 'durante' | 'cierre';
   amount?: number;
+  createdAt?: number;
+}
+
+// License model (Licencia)
+export interface License extends BaseEntity {
+  employeeId: string;        // ID del empleado
+  days: number;              // Días de licencia
+  amount: number;            // Monto de la licencia
+  startDate?: number;        // Fecha de inicio (timestamp)
+  endDate?: number;          // Fecha de fin (timestamp)
+  year: number;              // Año de la licencia (ej: 2025)
+  notes?: string;            // Notas adicionales
+  createdAt?: number;
+}
+
+// Salary model (Salario Mensual)
+export interface Salary extends BaseEntity {
+  employeeId: string;        // ID del empleado
+  year: number;              // Año (ej: 2025)
+  month: number;             // Mes (1-12)
+  dailyWage: number;         // Jornal diario
+  extras?: number;           // Extras/periodos (opcional)
+  baseSalary30Days: number;  // Salario base 30 días (calculado)
+  notes?: string;            // Notas adicionales
+  createdAt?: number;
+}
+
+// Vacation model (Salario Vacacional)
+export interface Vacation extends BaseEntity {
+  employeeId: string;        // ID del empleado
+  amount: number;            // Monto del salario vacacional
+  year: number;              // Año (ej: 2025)
+  paidDate?: number;         // Fecha de pago (timestamp, opcional)
+  notes?: string;            // Notas adicionales
+  createdAt?: number;
+}
+
+// Aguinaldo model
+export interface Aguinaldo extends BaseEntity {
+  employeeId: string;        // ID del empleado
+  amount: number;            // Monto del aguinaldo
+  year: number;              // Año (ej: 2025)
+  paidDate?: number;         // Fecha de pago (timestamp, opcional)
+  notes?: string;            // Notas adicionales
   createdAt?: number;
 }

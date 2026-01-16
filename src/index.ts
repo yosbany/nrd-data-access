@@ -20,6 +20,10 @@ import { RecipesService } from './services/recipes.service';
 import { ShiftsService } from './services/shifts.service';
 import { ShiftMovementsService } from './services/shift-movements.service';
 import { ShiftIncidentsService } from './services/shift-incidents.service';
+import { LicensesService } from './services/licenses.service';
+import { SalariesService } from './services/salaries.service';
+import { VacationsService } from './services/vacations.service';
+import { AguinaldoService } from './services/aguinaldo.service';
 
 // Export all models
 export * from './models';
@@ -52,6 +56,10 @@ class NRDDataAccess {
   public shifts: ShiftsService;
   public shiftMovements: ShiftMovementsService;
   public shiftIncidents: ShiftIncidentsService;
+  public licenses: LicensesService;
+  public salaries: SalariesService;
+  public vacations: VacationsService;
+  public aguinaldo: AguinaldoService;
 
   constructor() {
     // Initialize Firebase
@@ -79,6 +87,10 @@ class NRDDataAccess {
     this.shifts = new ShiftsService();
     this.shiftMovements = new ShiftMovementsService();
     this.shiftIncidents = new ShiftIncidentsService();
+    this.licenses = new LicensesService();
+    this.salaries = new SalariesService();
+    this.vacations = new VacationsService();
+    this.aguinaldo = new AguinaldoService();
   }
 }
 
