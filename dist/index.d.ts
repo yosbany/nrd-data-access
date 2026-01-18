@@ -25,6 +25,7 @@ import { VacationsService } from './services/vacations.service';
 import { AguinaldoService } from './services/aguinaldo.service';
 import { NotificationsService } from './services/notifications.service';
 import { FCMTokensService } from './services/fcm-tokens.service';
+import { ConfigService } from './services/config.service';
 export * from './models';
 export { AuthService } from './services/auth.service';
 export { BaseService } from './services/base.service';
@@ -57,6 +58,7 @@ declare class NRDDataAccess {
     aguinaldo: AguinaldoService;
     notifications: NotificationsService;
     fcmTokens: FCMTokensService;
+    config: ConfigService;
     constructor();
 }
 export default NRDDataAccess;
