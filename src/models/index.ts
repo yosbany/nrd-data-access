@@ -319,3 +319,23 @@ export interface Aguinaldo extends BaseEntity {
   createdAt?: number;
   updatedAt?: number;        // Última actualización del cálculo
 }
+
+// Notification model (Notificaciones pendientes)
+export interface Notification extends BaseEntity {
+  title: string;             // Título de la notificación
+  message: string;           // Mensaje/body de la notificación
+  sent: boolean;             // Si ya fue enviada o no
+  sentAt?: number;           // Timestamp cuando fue enviada
+  createdAt?: number;        // Timestamp de creación
+  error?: string;            // Mensaje de error si falló el envío
+}
+
+// FCMToken model (Tokens FCM de dispositivos)
+export interface FCMToken extends BaseEntity {
+  token: string;             // Token FCM del dispositivo
+  active?: boolean;          // Si el token está activo (default: true)
+  deviceName?: string;       // Nombre del dispositivo (opcional)
+  platform?: string;         // Plataforma: 'android', 'ios', 'web' (opcional)
+  createdAt?: number;        // Timestamp de creación
+  updatedAt?: number;        // Timestamp de última actualización
+}

@@ -24,6 +24,8 @@ import { LicensesService } from './services/licenses.service';
 import { SalariesService } from './services/salaries.service';
 import { VacationsService } from './services/vacations.service';
 import { AguinaldoService } from './services/aguinaldo.service';
+import { NotificationsService } from './services/notifications.service';
+import { FCMTokensService } from './services/fcm-tokens.service';
 
 // Export all models
 export * from './models';
@@ -60,6 +62,8 @@ class NRDDataAccess {
   public salaries: SalariesService;
   public vacations: VacationsService;
   public aguinaldo: AguinaldoService;
+  public notifications: NotificationsService;
+  public fcmTokens: FCMTokensService;
 
   constructor() {
     // Initialize Firebase
@@ -91,6 +95,8 @@ class NRDDataAccess {
     this.salaries = new SalariesService();
     this.vacations = new VacationsService();
     this.aguinaldo = new AguinaldoService();
+    this.notifications = new NotificationsService();
+    this.fcmTokens = new FCMTokensService();
   }
 }
 

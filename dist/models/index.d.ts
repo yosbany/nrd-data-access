@@ -260,4 +260,20 @@ export interface Aguinaldo extends BaseEntity {
     createdAt?: number;
     updatedAt?: number;
 }
+export interface Notification extends BaseEntity {
+    title: string;
+    message: string;
+    sent: boolean;
+    sentAt?: number;
+    createdAt?: number;
+    error?: string;
+}
+export interface FCMToken extends BaseEntity {
+    token: string;
+    active?: boolean;
+    deviceName?: string;
+    platform?: string;
+    createdAt?: number;
+    updatedAt?: number;
+}
 //# sourceMappingURL=index.d.ts.map
