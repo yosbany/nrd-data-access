@@ -44,6 +44,7 @@ export interface Employee extends BaseEntity {
     name: string;
     roleIds?: string[];
     startDate?: number;
+    endDate?: number;
 }
 export interface Order extends BaseEntity {
     clientId: string;

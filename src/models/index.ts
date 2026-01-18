@@ -58,6 +58,7 @@ export interface Employee extends BaseEntity {
   name: string;
   roleIds?: string[];
   startDate?: number; // Fecha de ingreso (timestamp) - usada para calcular días de licencia
+  endDate?: number; // Fecha de egreso (timestamp) - usada para calcular licencia no gozada al egreso
 }
 
 // Order model
