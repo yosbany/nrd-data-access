@@ -65,6 +65,7 @@
     
     <script src="https://cdn.jsdelivr.net/gh/yosbany/nrd-data-access@main/dist/nrd-data-access.js"></script>
     <script src="auth.js"></script>
+    <script src="tabs/inicio.js"></script>
     <script src="app.js"></script>
     
     <!-- PWA Install -->
@@ -176,28 +177,13 @@
             </div>
         </header>
 
-        <!-- Entity Selector -->
-        <nav class="bg-white border-b border-gray-200 px-3 sm:px-4 py-3 sm:py-4">
-            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center">
-                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Seleccionar Entidad:</label>
-                <select id="entity-selector" class="flex-1 max-w-md px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 text-sm sm:text-base">
-                    <option value="">-- Selecciona una entidad --</option>
-                </select>
-                <button 
-                    id="tools-btn"
-                    class="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors uppercase tracking-wider text-xs font-light"
-                >
-                    Herramientas
-                </button>
-            </div>
-            </nav>
 
         <!-- Main Content -->
         <main class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             <!-- Entity Content will be rendered here by app.js -->
             <div id="entity-content">
                 <div class="text-center py-12 text-gray-500">
-                    <p class="text-lg">Selecciona una entidad para comenzar</p>
+                    <p class="text-lg">Cargando modelos...</p>
                 </div>
             </div>
         </main>

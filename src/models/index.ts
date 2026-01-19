@@ -240,6 +240,22 @@ export interface Shift extends BaseEntity {
       collectedCashBreakdown?: CashBreakdown;
     };
   };
+  productCounts?: {
+    opening?: {
+      'cafe-senior'?: number;
+      'cigarros-grandes'?: number;
+      'cigarros-chicos'?: number;
+      'tabaco'?: number;
+      [key: string]: number | undefined;
+    };
+    closing?: {
+      'cafe-senior'?: number;
+      'cigarros-grandes'?: number;
+      'cigarros-chicos'?: number;
+      'tabaco'?: number;
+      [key: string]: number | undefined;
+    };
+  };
   closed?: boolean;
   closedAt?: number;
   finalObservations?: string;

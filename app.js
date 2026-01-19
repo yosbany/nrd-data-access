@@ -237,61 +237,23 @@ function initApp() {
   onAuthStateChanged((user) => {
     if (user) {
       showApp();
-      initEntitySelector();
+      // Esperar a que el DOM esté listo y los scripts cargados
+      const tryInitializeInicio = () => {
+        if (window.initializeInicio && typeof window.initializeInicio === 'function') {
+          console.log('Inicializando tab inicio...');
+          window.initializeInicio();
+        } else {
+          console.warn('initializeInicio no disponible aún, reintentando...');
+          setTimeout(tryInitializeInicio, 50);
+        }
+      };
+      // Esperar un poco para que los scripts se carguen
+      setTimeout(tryInitializeInicio, 100);
     } else {
       showLogin();
       cleanup();
     }
   });
-
-  // Entity selector initialization
-  function initEntitySelector() {
-    const selector = document.getElementById('entity-selector');
-    const toolsBtn = document.getElementById('tools-btn');
-    const content = document.getElementById('entity-content');
-    
-    if (!selector) return;
-
-    // Populate entity selector
-    Object.entries(ENTITIES).forEach(([key, entity]) => {
-      const option = document.createElement('option');
-      option.value = key;
-      option.textContent = entity.name;
-      selector.appendChild(option);
-    });
-
-    // Handle entity selection
-    selector.addEventListener('change', (e) => {
-      const entityKey = e.target.value;
-      if (entityKey) {
-        currentTab = entityKey;
-        const entity = ENTITIES[entityKey];
-        if (entity) {
-          cleanup();
-          if (entity.isSingle) {
-            renderSingleEntity(content, entity);
-          } else {
-            renderEntityList(content, entity);
-          }
-        }
-      } else {
-        content.innerHTML = `
-          <div class="text-center py-12 text-gray-500">
-            <p class="text-lg">Selecciona una entidad para comenzar</p>
-          </div>
-        `;
-        cleanup();
-      }
-    });
-
-    // Handle tools button
-    if (toolsBtn) {
-      toolsBtn.addEventListener('click', () => {
-        selector.value = '';
-        renderTools(content);
-      });
-    }
-  }
 
   function cleanup() {
     // Remove all listeners
@@ -301,6 +263,11 @@ function initApp() {
       }
     });
     listeners = {};
+    
+    // Cleanup inicio tab
+    if (window.cleanupInicio) {
+      window.cleanupInicio();
+    }
   }
 
   function renderEntityList(container, entity) {
