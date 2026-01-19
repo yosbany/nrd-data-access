@@ -40,6 +40,15 @@ export interface PreferredPrice {
   percentage?: number; // Porcentaje de descuento (solo si type es 'porcentual')
 }
 
+// Supplier model (Proveedor)
+export interface Supplier extends BaseEntity {
+  name: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  description?: string;
+}
+
 // CompanyInfo model (single object, not a collection)
 export interface CompanyInfo {
   address?: string;

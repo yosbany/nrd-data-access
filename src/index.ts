@@ -4,6 +4,7 @@ import { AccountsService } from './services/accounts.service';
 import { AreasService } from './services/areas.service';
 import { CategoriesService } from './services/categories.service';
 import { ClientsService } from './services/clients.service';
+import { SuppliersService } from './services/suppliers.service';
 import { CompanyInfoService } from './services/company-info.service';
 import { ContractsService } from './services/contracts.service';
 import { EmployeesService } from './services/employees.service';
@@ -43,6 +44,7 @@ class NRDDataAccess {
   public areas: AreasService;
   public categories: CategoriesService;
   public clients: ClientsService;
+  public suppliers: SuppliersService;
   public companyInfo: CompanyInfoService;
   public contracts: ContractsService;
   public employees: EmployeesService;
@@ -77,6 +79,7 @@ class NRDDataAccess {
     this.areas = new AreasService();
     this.categories = new CategoriesService();
     this.clients = new ClientsService();
+    this.suppliers = new SuppliersService();
     this.companyInfo = new CompanyInfoService();
     this.contracts = new ContractsService();
     this.employees = new EmployeesService();

@@ -120,6 +120,7 @@ La librería proporciona los siguientes servicios:
 - `nrd.areas` - Áreas (AreasService)
 - `nrd.categories` - Categorías (CategoriesService)
 - `nrd.clients` - Clientes (ClientsService)
+- `nrd.suppliers` - Proveedores (SuppliersService)
 - `nrd.companyInfo` - Información de la empresa (CompanyInfoService)
 - `nrd.contracts` - Contratos y Habilitaciones (ContractsService)
 - `nrd.employees` - Empleados (EmployeesService)

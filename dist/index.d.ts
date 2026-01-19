@@ -3,6 +3,7 @@ import { AccountsService } from './services/accounts.service';
 import { AreasService } from './services/areas.service';
 import { CategoriesService } from './services/categories.service';
 import { ClientsService } from './services/clients.service';
+import { SuppliersService } from './services/suppliers.service';
 import { CompanyInfoService } from './services/company-info.service';
 import { ContractsService } from './services/contracts.service';
 import { EmployeesService } from './services/employees.service';
@@ -36,6 +37,7 @@ declare class NRDDataAccess {
     areas: AreasService;
     categories: CategoriesService;
     clients: ClientsService;
+    suppliers: SuppliersService;
     companyInfo: CompanyInfoService;
     contracts: ContractsService;
     employees: EmployeesService;

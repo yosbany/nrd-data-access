@@ -29,6 +29,13 @@ export interface PreferredPrice {
     price?: number;
     percentage?: number;
 }
+export interface Supplier extends BaseEntity {
+    name: string;
+    phone?: string;
+    email?: string;
+    address?: string;
+    description?: string;
+}
 export interface CompanyInfo {
     address?: string;
     email?: string;
@@ -191,6 +198,22 @@ export interface Shift extends BaseEntity {
             initialFundBreakdown?: CashBreakdown;
             collectedCash?: number;
             collectedCashBreakdown?: CashBreakdown;
+        };
+    };
+    productCounts?: {
+        opening?: {
+            'cafe-senior'?: number;
+            'cigarros-grandes'?: number;
+            'cigarros-chicos'?: number;
+            'tabaco'?: number;
+            [key: string]: number | undefined;
+        };
+        closing?: {
+            'cafe-senior'?: number;
+            'cigarros-grandes'?: number;
+            'cigarros-chicos'?: number;
+            'tabaco'?: number;
+            [key: string]: number | undefined;
         };
     };
     closed?: boolean;
