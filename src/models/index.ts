@@ -365,3 +365,21 @@ export interface FCMToken extends BaseEntity {
   createdAt?: number;        // Timestamp de creación
   updatedAt?: number;        // Timestamp de última actualización
 }
+
+// PurchaseOrder model (Orden de Compra)
+export interface PurchaseOrder extends BaseEntity {
+  orderNumber?: string;      // Número de orden (opcional)
+  supplierId: string;        // ID del proveedor
+  supplierName?: string;     // Nombre del proveedor (para mostrar)
+  status: string;            // Estado: 'Pendiente', 'Completada', 'Cancelada'
+  total: number;             // Total de la orden
+  items?: PurchaseOrderItem[]; // Items de la orden
+  createdAt?: number;        // Timestamp de creación
+}
+
+export interface PurchaseOrderItem {
+  productId?: string;        // ID del producto (opcional)
+  productName?: string;      // Nombre del producto (para mostrar)
+  quantity: number;          // Cantidad
+  price: number;             // Precio unitario
+}

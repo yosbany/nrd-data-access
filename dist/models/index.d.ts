@@ -300,4 +300,19 @@ export interface FCMToken extends BaseEntity {
     createdAt?: number;
     updatedAt?: number;
 }
+export interface PurchaseOrder extends BaseEntity {
+    orderNumber?: string;
+    supplierId: string;
+    supplierName?: string;
+    status: string;
+    total: number;
+    items?: PurchaseOrderItem[];
+    createdAt?: number;
+}
+export interface PurchaseOrderItem {
+    productId?: string;
+    productName?: string;
+    quantity: number;
+    price: number;
+}
 //# sourceMappingURL=index.d.ts.map
