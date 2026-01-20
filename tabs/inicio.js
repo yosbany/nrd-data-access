@@ -647,20 +647,20 @@ function renderModelCard(key, modelo) {
   const cardId = `model-card-${key}`;
   
   return `
-    <div id="${cardId}" class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 hover:border-red-600 transition-colors scroll-mt-8">
-      <div class="mb-4">
-        <div class="flex items-center justify-between mb-2">
-          <h3 class="text-lg font-medium text-gray-800">${escapeHtml(modelo.name)}</h3>
-          ${isSingle ? '<span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">Único</span>' : ''}
+    <div id="${cardId}" class="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:border-red-600 transition-colors scroll-mt-8">
+      <div class="mb-3">
+        <div class="flex items-center justify-between mb-1.5">
+          <h3 class="text-base font-medium text-gray-800">${escapeHtml(modelo.name)}</h3>
+          ${isSingle ? '<span class="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">Único</span>' : ''}
         </div>
-        <p class="text-sm text-gray-600 mb-3">${escapeHtml(modelo.description || '')}</p>
-        <div class="text-xs text-gray-500 font-mono mb-3">${key}</div>
+        <p class="text-xs text-gray-600 mb-2">${escapeHtml(modelo.description || '')}</p>
+        <div class="text-xs text-gray-500 font-mono mb-2">${key}</div>
       </div>
 
       ${properties.length > 0 ? `
-        <div class="mb-4">
-          <h4 class="text-xs uppercase tracking-wider text-gray-600 mb-2">Propiedades</h4>
-          <div class="space-y-2 max-h-64 overflow-y-auto">
+        <div class="mb-3">
+          <h4 class="text-xs uppercase tracking-wider text-gray-600 mb-1.5">Propiedades</h4>
+          <div class="space-y-0.5">
             ${properties.map(prop => {
               // Buscar si esta propiedad tiene una relación
               // Primero buscar en relations por el campo exacto
@@ -681,23 +681,23 @@ function renderModelCard(key, modelo) {
               }
               
               return `
-              <div class="border-l-2 ${prop.required ? 'border-red-600' : 'border-gray-300'} pl-2 py-1">
-                <div class="flex items-start justify-between gap-2">
-                  <div class="flex-1 min-w-0">
-                    <span class="text-sm font-medium text-gray-800">${escapeHtml(prop.name)}</span>
-                    ${prop.required ? '<span class="text-xs text-red-600 ml-1">*</span>' : ''}
+              <div class="border-l-2 ${prop.required ? 'border-red-600' : 'border-gray-300'} pl-1.5 py-0.5">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex-1 min-w-0 flex items-center gap-1">
+                    <span class="text-xs font-medium text-gray-800">${escapeHtml(prop.name)}</span>
+                    ${prop.required ? '<span class="text-xs text-red-600">*</span>' : ''}
+                    <span class="text-xs text-gray-400">${formatType(prop.type)}</span>
                   </div>
-                  <div class="text-xs flex-shrink-0">${formatType(prop.type)}</div>
                 </div>
-                ${prop.description ? `<div class="text-xs text-gray-500 mt-0.5">${escapeHtml(prop.description)}</div>` : ''}
+                ${prop.description ? `<div class="text-xs text-gray-500 leading-tight">${escapeHtml(prop.description)}</div>` : ''}
                 ${relatedModel ? `
                   <button 
                     onclick="focusModelCard('${relatedModel}'); event.stopPropagation();"
-                    class="text-xs text-blue-600 hover:text-blue-800 hover:underline mt-0.5 cursor-pointer transition-colors flex items-center gap-1"
+                    class="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors inline-flex items-center gap-0.5"
                     title="Ver modelo ${escapeHtml(getModelName(relatedModel))}"
                   >
                     <span>→</span>
-                    <span class="font-medium">${escapeHtml(getModelName(relatedModel))}</span>
+                    <span>${escapeHtml(getModelName(relatedModel))}</span>
                   </button>
                 ` : ''}
               </div>
@@ -707,7 +707,7 @@ function renderModelCard(key, modelo) {
         </div>
       ` : ''}
 
-      <div class="pt-3 border-t border-gray-200">
+      <div class="pt-2 border-t border-gray-200">
         <div class="flex items-center justify-between text-xs text-gray-500">
           <span>${properties.length} propiedad${properties.length !== 1 ? 'es' : ''}</span>
           ${relations.length > 0 ? `<span>${relations.length} relación${relations.length !== 1 ? 'es' : ''}</span>` : ''}
