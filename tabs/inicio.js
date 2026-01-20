@@ -170,20 +170,6 @@ const MODELOS = {
       { field: 'supplierId', to: 'suppliers', description: 'Proveedor referente' }
     ]
   },
-  inputs: {
-    name: 'Insumos',
-    service: 'inputs',
-    description: 'Insumos utilizados en recetas',
-    properties: [
-      { name: 'id', type: 'string', required: false, description: 'ID único' },
-      { name: 'name', type: 'string', required: true, description: 'Nombre del insumo' },
-      { name: 'unit', type: 'string', required: true, description: 'Unidad de medida' },
-      { name: 'unitPrice', type: 'number', required: true, description: 'Precio unitario' },
-      { name: 'supplier', type: 'string', required: false, description: 'Proveedor' },
-      { name: 'lastUpdated', type: 'number', required: false, description: 'Última actualización (timestamp)' }
-    ],
-    relations: []
-  },
   'labor-roles': {
     name: 'Roles de Mano de Obra',
     service: 'laborRoles',
@@ -216,14 +202,14 @@ const MODELOS = {
       { name: 'productId', type: 'string', required: true, description: 'ID del producto', relation: 'products' },
       { name: 'variantId', type: 'string', required: false, description: 'ID de la variante', relation: 'products' },
       { name: 'batchYield', type: 'number', required: true, description: 'Rendimiento del lote' },
-      { name: 'inputs', type: 'RecipeInput[]', required: false, description: 'Insumos utilizados' },
+      { name: 'inputs', type: 'RecipeInput[]', required: false, description: 'Productos utilizados como insumos (productos con esInsumo: true)' },
       { name: 'labor', type: 'RecipeLabor[]', required: false, description: 'Mano de obra aplicada' },
       { name: 'createdAt', type: 'number', required: false, description: 'Fecha de creación (timestamp)' },
       { name: 'active', type: 'boolean', required: false, description: 'Si la receta está activa' }
     ],
     relations: [
       { field: 'productId', to: 'products', description: 'Producto' },
-      { field: 'inputs[].inputId', to: 'inputs', description: 'Insumos → Insumos' },
+      { field: 'inputs[].productId', to: 'products', description: 'Productos → Productos (con esInsumo: true)' },
       { field: 'labor[].roleId', to: 'laborRoles', description: 'Mano de obra → Roles de Mano de Obra' }
     ]
   },

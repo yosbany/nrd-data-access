@@ -171,13 +171,6 @@ export interface ContractDocument {
     name: string;
     data: string;
 }
-export interface Input extends BaseEntity {
-    name: string;
-    unit: 'kg' | 'litro' | 'unidad' | string;
-    unitPrice: number;
-    supplier?: string;
-    lastUpdated?: number;
-}
 export interface LaborRole extends BaseEntity {
     name: string;
     hourlyCost: number;
@@ -197,8 +190,7 @@ export interface Recipe extends BaseEntity {
     active?: boolean;
 }
 export interface RecipeInput {
-    inputId: string;
-    inputType: 'input' | 'product';
+    productId: string;
     quantity: number;
 }
 export interface RecipeLabor {

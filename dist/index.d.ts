@@ -13,7 +13,6 @@ import { ProductsService } from './services/products.service';
 import { RolesService } from './services/roles.service';
 import { TasksService } from './services/tasks.service';
 import { TransactionsService } from './services/transactions.service';
-import { InputsService } from './services/inputs.service';
 import { LaborRolesService } from './services/labor-roles.service';
 import { IndirectCostsService } from './services/indirect-costs.service';
 import { RecipesService } from './services/recipes.service';
@@ -48,7 +47,6 @@ declare class NRDDataAccess {
     roles: RolesService;
     tasks: TasksService;
     transactions: TransactionsService;
-    inputs: InputsService;
     laborRoles: LaborRolesService;
     indirectCosts: IndirectCostsService;
     recipes: RecipesService;

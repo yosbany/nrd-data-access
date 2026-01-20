@@ -127,17 +127,6 @@ const ENTITIES = {
     ],
     hasComplexFields: true // For variants, unidadesCompra, conversiones, attributes
   },
-  inputs: {
-    name: 'Insumos',
-    service: 'inputs',
-    fields: [
-      { key: 'name', label: 'Nombre', type: 'text', required: true },
-      { key: 'unit', label: 'Unidad', type: 'text', required: true },
-      { key: 'unitPrice', label: 'Precio Unitario', type: 'number', step: '0.01', required: true },
-      { key: 'supplier', label: 'Proveedor', type: 'text' },
-      { key: 'lastUpdated', label: 'Última Actualización', type: 'date' }
-    ]
-  },
   'labor-roles': {
     name: 'Roles de Mano de Obra',
     service: 'laborRoles',

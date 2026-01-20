@@ -208,15 +208,6 @@ export interface ContractDocument {
   data: string; // Data URL (base64)
 }
 
-// Input model (Insumo)
-export interface Input extends BaseEntity {
-  name: string;
-  unit: 'kg' | 'litro' | 'unidad' | string; // Unidad de medida
-  unitPrice: number; // Precio unitario de compra actual
-  supplier?: string; // Proveedor (opcional)
-  lastUpdated?: number; // Timestamp de última actualización de precio
-}
-
 // LaborRole model (Rol de Mano de Obra)
 export interface LaborRole extends BaseEntity {
   name: string;
@@ -235,15 +226,14 @@ export interface Recipe extends BaseEntity {
   productId: string; // Producto asociado
   variantId?: string; // ID de la variante (si existe, la receta es específica para esa variante)
   batchYield: number; // Cantidad de unidades que rinde el lote
-  inputs: RecipeInput[]; // Insumos utilizados
+  inputs: RecipeInput[]; // Productos utilizados como insumos (productos con esInsumo: true)
   labor: RecipeLabor[]; // Mano de obra aplicada
   createdAt?: number;
   active?: boolean; // Permite activar/desactivar recetas
 }
 
 export interface RecipeInput {
-  inputId: string; // ID del insumo (referencia en tiempo real)
-  inputType: 'input' | 'product'; // Tipo: insumo directo o subproducto (producto usado como insumo)
+  productId: string; // ID del producto (referencia en tiempo real) - debe ser un producto con esInsumo: true
   quantity: number; // Cantidad utilizada
   // NO se guardan snapshots - se usan precios actuales en tiempo real
 }
