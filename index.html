@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=1768910335013">
     
     <!-- Force cache reload with version parameter in URL -->
     <script>
@@ -59,16 +59,22 @@
           const url = new URL(window.location.href);
           url.searchParams.set('v', currentVersion);
           window.history.replaceState({}, '', url.toString());
+        } else if (!urlVersion && !currentVersion) {
+          // If no version at all, generate one and add it
+          const newVersion = Date.now();
+          const url = new URL(window.location.href);
+          url.searchParams.set('v', newVersion);
+          window.history.replaceState({}, '', url.toString());
         }
       })();
     </script>
     
     <script src="https://cdn.jsdelivr.net/gh/yosbany/nrd-data-access@main/dist/nrd-data-access.js"></script>
-    <script src="auth.js"></script>
-    <script src="tabs/inicio.js"></script>
-    <script src="tabs/fcm-tokens.js"></script>
-    <script src="tabs/configs.js"></script>
-    <script src="app.js"></script>
+    <script src="auth.js?v=1768910335013"></script>
+    <script src="tabs/inicio.js?v=1768910335013"></script>
+    <script src="tabs/fcm-tokens.js?v=1768910335013"></script>
+    <script src="tabs/configs.js?v=1768910335013"></script>
+    <script src="app.js?v=1768910335013"></script>
     
     <!-- PWA Install -->
     <script>
@@ -533,7 +539,8 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js')
+          const swVersion = new URLSearchParams(window.location.search).get('v') || Date.now();
+          navigator.serviceWorker.register(`/service-worker.js?v=${swVersion}`)
             .then((registration) => {
               console.log('SW registered: ', registration);
             })

@@ -27,10 +27,31 @@ def update_version():
     # Remove existing version parameters
     html = re.sub(r'\?v=\d+', '', html)
     
-    # Add version parameter to dist/nrd-data-access.js
+    # Add version parameter to CSS
     html = re.sub(
-        r'(<script[^>]*src=["\'])(dist/nrd-data-access\.js)(["\'][^>]*>)',
+        r'(<link[^>]*href=["\'])(styles\.css)(["\'][^>]*>)',
         rf'\1\2?v={version}\3',
+        html
+    )
+    
+    # Add version parameter to JS files (except Firebase CDN and external libraries)
+    html = re.sub(
+        r'(<script[^>]*src=["\'])(logger\.js|modal\.js|auth\.js|tabs/[^"\']+\.js|app\.js)(["\'][^>]*>)',
+        rf'\1\2?v={version}\3',
+        html
+    )
+    
+    # Add version parameter to service worker (both relative and absolute paths)
+    html = re.sub(
+        r'(serviceWorker\.register\(["\'])(/)?service-worker\.js(["\'])',
+        rf'\1\2service-worker.js?v={version}\3',
+        html
+    )
+    
+    # Also handle service worker registration with template literals
+    html = re.sub(
+        r'(serviceWorker\.register\(`)(/)?service-worker\.js\?v=\d+(`)',
+        rf'\1\2service-worker.js?v={version}\3',
         html
     )
     
