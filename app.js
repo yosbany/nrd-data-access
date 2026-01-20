@@ -271,6 +271,13 @@ function initApp() {
       if (window.loadFCMTokensTab && typeof window.loadFCMTokensTab === 'function') {
         window.loadFCMTokensTab();
       }
+    } else if (tabName === 'configs') {
+      if (window.initializeConfigs && typeof window.initializeConfigs === 'function') {
+        window.initializeConfigs();
+      }
+      if (window.loadConfigsTab && typeof window.loadConfigsTab === 'function') {
+        window.loadConfigsTab();
+      }
     }
   }
   
@@ -319,6 +326,11 @@ function initApp() {
     // Cleanup FCM tokens tab
     if (window.cleanupFCMTokens) {
       window.cleanupFCMTokens();
+    }
+    
+    // Cleanup configs tab
+    if (window.cleanupConfigs) {
+      window.cleanupConfigs();
     }
     
     currentTab = null;
