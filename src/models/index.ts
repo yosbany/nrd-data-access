@@ -49,6 +49,20 @@ export interface Supplier extends BaseEntity {
   description?: string;
 }
 
+// PurchaseUnit model (Unidad de Compra por Proveedor)
+export interface PurchaseUnit {
+  supplierId: string; // ID del proveedor
+  unidad: string; // Unidad de medida (ej: 'kg', 'litro', 'caja', 'unidad')
+}
+
+// UnitConversion model (Conversión entre Unidades)
+export interface UnitConversion {
+  fromUnit: string; // Unidad origen (ej: 'kg')
+  toUnit: string; // Unidad destino (ej: 'g')
+  factor: number; // Factor de conversión: cantidad en fromUnit * factor = cantidad en toUnit
+  // Ejemplo: 1 kg = 1000 g, entonces factor = 1000
+}
+
 // CompanyInfo model (single object, not a collection)
 export interface CompanyInfo {
   address?: string;
@@ -114,18 +128,38 @@ export interface Product extends BaseEntity {
   targetMargin?: number; // Margen objetivo (porcentaje, ej: 30 = 30%)
   active?: boolean;
   variants?: ProductVariant[]; // Variantes del producto (tamaños, sabores, colores, etc.)
+  attributes?: { [key: string]: string }; // Atributos flexibles (ej: { "tamaño": "grande", "sabor": "chocolate" })
+  esVendible?: boolean; // Indica si el producto es vendible
+  esComprable?: boolean; // Indica si el producto es comprable
+  esInsumo?: boolean; // Indica si el producto es un insumo
+  esProducible?: boolean; // Indica si el producto es producible
+  unidadVenta?: string; // Unidad de medida de venta (ej: 'kg', 'litro', 'unidad', 'caja')
+  unidadProduccion?: string; // Unidad de medida de producción (ej: 'kg', 'litro', 'unidad')
+  unidadesCompra?: PurchaseUnit[]; // Unidades de medida de compra por proveedor
+  conversiones?: UnitConversion[]; // Conversiones entre unidades de medida
+  recipeId?: string; // ID de la receta asociada al producto
+  supplierId?: string; // ID del proveedor referente para compras (proveedor principal por defecto)
 }
 
 // ProductVariant model
 export interface ProductVariant {
-  id: string; // ID único de la variante (generado automáticamente)
   name: string; // Nombre de la variante (ej: "Pequeña", "Chocolate", "Rojo")
-  skuSuffix?: string; // Sufijo del SKU (se combina con SKU del padre: <SKU Padre>_<skuSuffix>)
+  sku?: string; // Código SKU de la variante
   price: number; // Precio de la variante
   cost?: number; // Costo específico (opcional, se calcula de la receta si existe)
   targetMargin?: number; // Margen objetivo específico (opcional, hereda del padre si no se especifica)
   active?: boolean; // Si la variante está activa
   attributes?: { [key: string]: string }; // Atributos flexibles (ej: { "tamaño": "grande", "sabor": "chocolate" })
+  esVendible?: boolean; // Indica si la variante es vendible
+  esComprable?: boolean; // Indica si la variante es comprable
+  esInsumo?: boolean; // Indica si la variante es un insumo
+  esProducible?: boolean; // Indica si la variante es producible
+  unidadVenta?: string; // Unidad de medida de venta (ej: 'kg', 'litro', 'unidad', 'caja')
+  unidadProduccion?: string; // Unidad de medida de producción (ej: 'kg', 'litro', 'unidad')
+  unidadesCompra?: PurchaseUnit[]; // Unidades de medida de compra por proveedor
+  conversiones?: UnitConversion[]; // Conversiones entre unidades de medida
+  recipeId?: string; // ID de la receta asociada a la variante (si existe, la receta es específica para esta variante)
+  supplierId?: string; // ID del proveedor referente para compras (proveedor principal por defecto)
 }
 
 // Role model

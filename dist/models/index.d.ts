@@ -36,6 +36,15 @@ export interface Supplier extends BaseEntity {
     address?: string;
     description?: string;
 }
+export interface PurchaseUnit {
+    supplierId: string;
+    unidad: string;
+}
+export interface UnitConversion {
+    fromUnit: string;
+    toUnit: string;
+    factor: number;
+}
 export interface CompanyInfo {
     address?: string;
     email?: string;
@@ -90,11 +99,23 @@ export interface Product extends BaseEntity {
     targetMargin?: number;
     active?: boolean;
     variants?: ProductVariant[];
+    attributes?: {
+        [key: string]: string;
+    };
+    esVendible?: boolean;
+    esComprable?: boolean;
+    esInsumo?: boolean;
+    esProducible?: boolean;
+    unidadVenta?: string;
+    unidadProduccion?: string;
+    unidadesCompra?: PurchaseUnit[];
+    conversiones?: UnitConversion[];
+    recipeId?: string;
+    supplierId?: string;
 }
 export interface ProductVariant {
-    id: string;
     name: string;
-    skuSuffix?: string;
+    sku?: string;
     price: number;
     cost?: number;
     targetMargin?: number;
@@ -102,6 +123,16 @@ export interface ProductVariant {
     attributes?: {
         [key: string]: string;
     };
+    esVendible?: boolean;
+    esComprable?: boolean;
+    esInsumo?: boolean;
+    esProducible?: boolean;
+    unidadVenta?: string;
+    unidadProduccion?: string;
+    unidadesCompra?: PurchaseUnit[];
+    conversiones?: UnitConversion[];
+    recipeId?: string;
+    supplierId?: string;
 }
 export interface Role extends BaseEntity {
     name: string;
