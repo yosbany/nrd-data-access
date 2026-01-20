@@ -464,14 +464,30 @@ function getModelProperties(key) {
   return MODELOS[key]?.properties || [];
 }
 
-function formatType(type) {
-  if (type.includes('[]')) {
-    return `<span class="text-purple-600">Array&lt;${type.replace('[]', '')}&gt;</span>`;
+function formatType(type, propName = null, isRequired = false, description = '') {
+  const isArray = type.includes('[]');
+  const baseType = isArray ? type.replace('[]', '') : type;
+  const isComplexObject = isComplexObjectType(type, propName || '', []);
+  
+  if (isArray && isComplexObject) {
+    // Hacer el nombre del objeto dentro de <> clickeable
+    return `<span class="text-purple-600">Array&lt;<button onclick="showObjectPropertiesModal('${escapeHtml(propName || '')}', '${escapeHtml(type)}', ${isRequired ? 'true' : 'false'}, '${escapeHtml(description.replace(/'/g, "\\'"))}'); event.stopPropagation();" class="text-purple-600 hover:text-purple-800 hover:underline cursor-pointer font-medium">${escapeHtml(baseType)}</button>&gt;</span>`;
   }
+  
+  if (isArray) {
+    return `<span class="text-purple-600">Array&lt;${escapeHtml(baseType)}&gt;</span>`;
+  }
+  
+  if (type === 'object' && propName) {
+    // Hacer 'object' clickeable cuando es un objeto flexible
+    return `<button onclick="showObjectPropertiesModal('${escapeHtml(propName)}', '${escapeHtml(type)}', ${isRequired ? 'true' : 'false'}, '${escapeHtml(description.replace(/'/g, "\\'"))}'); event.stopPropagation();" class="text-gray-700 hover:text-gray-900 hover:underline cursor-pointer font-medium">object</button>`;
+  }
+  
   if (type.includes('|')) {
-    return `<span class="text-blue-600">${type}</span>`;
+    return `<span class="text-blue-600">${escapeHtml(type)}</span>`;
   }
-  return `<span class="text-gray-700">${type}</span>`;
+  
+  return `<span class="text-gray-700">${escapeHtml(type)}</span>`;
 }
 
 // Detectar si un tipo es un objeto complejo (no primitivo)
@@ -852,26 +868,13 @@ function renderModelCard(key, modelo) {
                 relatedModel = prop.relation;
               }
               
-              // Detectar si es un objeto complejo
-              const isComplexObject = isComplexObjectType(prop.type, prop.name, relations);
-              
               return `
               <div class="border-l-2 ${prop.required ? 'border-red-600' : 'border-gray-300'} pl-1.5 py-0.5">
                 <div class="flex items-center justify-between gap-2">
                   <div class="flex-1 min-w-0 flex items-center gap-1 flex-wrap">
                     <span class="text-xs font-medium text-gray-800">${escapeHtml(prop.name)}</span>
                     ${prop.required ? '<span class="text-xs text-red-600">*</span>' : ''}
-                    <span class="text-xs text-gray-400">${formatType(prop.type)}</span>
-                    ${isComplexObject ? `
-                      <button 
-                        onclick="showObjectPropertiesModal('${escapeHtml(prop.name)}', '${escapeHtml(prop.type)}', ${prop.required ? 'true' : 'false'}, '${escapeHtml((prop.description || '').replace(/'/g, "\\'"))}'); event.stopPropagation();"
-                        class="text-xs text-green-600 hover:text-green-800 hover:underline cursor-pointer transition-colors inline-flex items-center gap-0.5 ml-1"
-                        title="Ver propiedades del objeto"
-                      >
-                        <span>📋</span>
-                        <span>Ver objeto</span>
-                      </button>
-                    ` : ''}
+                    <span class="text-xs text-gray-400">${formatType(prop.type, prop.name, prop.required, prop.description || '')}</span>
                   </div>
                 </div>
                 ${prop.description ? `<div class="text-xs text-gray-500 leading-tight">${escapeHtml(prop.description)}</div>` : ''}
