@@ -24,7 +24,7 @@ body {
 .model-card-highlight {
   border-color: #dc2626 !important;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.3);
-  background-color: #fef2f2;
+  background-color: #fee2e2 !important;
 }
 
 /* Animación inicial al hacer focus */

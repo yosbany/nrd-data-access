@@ -474,6 +474,37 @@ function formatType(type) {
   return `<span class="text-gray-700">${type}</span>`;
 }
 
+// Detectar si un tipo es un objeto complejo (no primitivo)
+function isComplexObjectType(type, propName, relations) {
+  // Tipos primitivos
+  const primitiveTypes = ['string', 'number', 'boolean'];
+  
+  // Si es exactamente 'object', es un objeto flexible
+  if (type === 'object') {
+    return true;
+  }
+  
+  // Si es un array, extraer el tipo base
+  let baseType = type;
+  const isArray = type.includes('[]');
+  if (isArray) {
+    baseType = type.replace('[]', '');
+  }
+  
+  // Si el tipo base es primitivo, no es objeto complejo
+  if (primitiveTypes.includes(baseType)) {
+    return false;
+  }
+  
+  // Si el tipo base empieza con mayúscula (es un tipo personalizado/objeto complejo)
+  // Mostrar modal para todos los objetos complejos, sin importar si tienen relaciones anidadas
+  if (baseType && baseType[0] === baseType[0].toUpperCase() && !primitiveTypes.includes(baseType)) {
+    return true;
+  }
+  
+  return false;
+}
+
 function cleanupInicio() {
   if (inicioListener) {
     inicioListener();
@@ -644,6 +675,55 @@ function attachCardFocusListeners() {
   });
 }
 
+// Definiciones de tipos complejos conocidos
+const COMPLEX_TYPE_DEFINITIONS = {
+  ProcessActivity: {
+    name: 'ProcessActivity',
+    description: 'Actividad de un proceso',
+    properties: [
+      { name: 'name', type: 'string', required: true, description: 'Nombre de la actividad' },
+      { name: 'taskId', type: 'string', required: true, description: 'ID de la tarea asociada' },
+      { name: 'roleId', type: 'string', required: false, description: 'ID del rol asignado' }
+    ]
+  },
+  ContractDocument: {
+    name: 'ContractDocument',
+    description: 'Documento adjunto de un contrato',
+    properties: [
+      { name: 'name', type: 'string', required: true, description: 'Nombre del documento' },
+      { name: 'data', type: 'string', required: true, description: 'Data URL del documento (base64)' }
+    ]
+  },
+  OrderItem: {
+    name: 'OrderItem',
+    description: 'Item de un pedido',
+    properties: [
+      { name: 'productId', type: 'string', required: true, description: 'ID del producto' },
+      { name: 'productName', type: 'string', required: false, description: 'Nombre del producto (denormalizado)' },
+      { name: 'quantity', type: 'number', required: true, description: 'Cantidad' },
+      { name: 'price', type: 'number', required: true, description: 'Precio unitario' }
+    ]
+  },
+  PreferredPrice: {
+    name: 'PreferredPrice',
+    description: 'Precio preferencial para un cliente',
+    properties: [
+      { name: 'productId', type: 'string', required: true, description: 'ID del producto' },
+      { name: 'type', type: "'fijo' | 'porcentual'", required: true, description: 'Tipo de precio preferencial' },
+      { name: 'price', type: 'number', required: false, description: 'Precio fijo o precio calculado' },
+      { name: 'percentage', type: 'number', required: false, description: 'Porcentaje de descuento (si type es porcentual)' }
+    ]
+  },
+  RecipeInput: {
+    name: 'RecipeInput',
+    description: 'Insumo de una receta',
+    properties: [
+      { name: 'productId', type: 'string', required: true, description: 'ID del producto (debe ser un producto con esInsumo: true)' },
+      { name: 'quantity', type: 'number', required: true, description: 'Cantidad utilizada' }
+    ]
+  }
+};
+
 // Función para mostrar modal con propiedades de objeto
 function showObjectPropertiesModal(propName, propType, isRequired, description) {
   const modal = document.getElementById('object-properties-modal');
@@ -656,6 +736,16 @@ function showObjectPropertiesModal(propName, propType, isRequired, description) 
   }
   
   modalTitle.textContent = `Propiedades del objeto: ${escapeHtml(propName)}`;
+  
+  // Extraer tipo base si es array
+  let baseType = propType;
+  const isArray = propType.includes('[]');
+  if (isArray) {
+    baseType = propType.replace('[]', '');
+  }
+  
+  // Buscar definición del tipo complejo
+  const typeDefinition = COMPLEX_TYPE_DEFINITIONS[baseType];
   
   // Construir contenido del modal
   let contentHtml = `
@@ -674,13 +764,32 @@ function showObjectPropertiesModal(propName, propType, isRequired, description) 
         <div class="text-xs uppercase tracking-wider text-gray-600 mb-1">Requerido</div>
         <div class="text-sm text-gray-700">${isRequired === 'true' || isRequired === true ? 'Sí' : 'No'}</div>
       </div>
+      ${typeDefinition ? `
+      <div class="pt-2">
+        <div class="text-xs uppercase tracking-wider text-gray-600 mb-2">Propiedades del tipo ${escapeHtml(baseType)}</div>
+        <div class="space-y-2">
+          ${typeDefinition.properties.map(prop => `
+            <div class="border-l-2 ${prop.required ? 'border-red-600' : 'border-gray-300'} pl-2 py-1 bg-gray-50 rounded">
+              <div class="flex items-center gap-1 mb-0.5">
+                <span class="text-xs font-medium text-gray-800">${escapeHtml(prop.name)}</span>
+                ${prop.required ? '<span class="text-xs text-red-600">*</span>' : ''}
+                <span class="text-xs text-gray-400">${formatType(prop.type)}</span>
+              </div>
+              ${prop.description ? `<div class="text-xs text-gray-500">${escapeHtml(prop.description)}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ` : `
       <div class="pt-2">
         <div class="text-xs uppercase tracking-wider text-gray-600 mb-2">Nota</div>
         <div class="text-xs text-gray-500 bg-gray-50 p-3 rounded">
-          Este es un objeto flexible que puede contener cualquier estructura de datos clave-valor. 
+          ${isArray ? `Este es un array de objetos de tipo <strong>${escapeHtml(baseType)}</strong>. ` : ''}
+          ${baseType === 'object' ? 'Este es un objeto flexible que puede contener cualquier estructura de datos clave-valor. ' : ''}
           Las propiedades específicas se definen dinámicamente según el uso en la aplicación.
         </div>
       </div>
+      `}
     </div>
   `;
   
@@ -743,19 +852,19 @@ function renderModelCard(key, modelo) {
                 relatedModel = prop.relation;
               }
               
-              // Detectar si es un objeto
-              const isObject = prop.type === 'object' || (prop.type.includes('object') && !prop.type.includes('[]'));
+              // Detectar si es un objeto complejo
+              const isComplexObject = isComplexObjectType(prop.type, prop.name, relations);
               
               return `
               <div class="border-l-2 ${prop.required ? 'border-red-600' : 'border-gray-300'} pl-1.5 py-0.5">
                 <div class="flex items-center justify-between gap-2">
-                  <div class="flex-1 min-w-0 flex items-center gap-1">
+                  <div class="flex-1 min-w-0 flex items-center gap-1 flex-wrap">
                     <span class="text-xs font-medium text-gray-800">${escapeHtml(prop.name)}</span>
                     ${prop.required ? '<span class="text-xs text-red-600">*</span>' : ''}
                     <span class="text-xs text-gray-400">${formatType(prop.type)}</span>
-                    ${isObject ? `
+                    ${isComplexObject ? `
                       <button 
-                        onclick="showObjectPropertiesModal('${escapeHtml(prop.name)}', '${escapeHtml(prop.type)}', ${prop.required ? 'true' : 'false'}, '${escapeHtml(prop.description || '')}'); event.stopPropagation();"
+                        onclick="showObjectPropertiesModal('${escapeHtml(prop.name)}', '${escapeHtml(prop.type)}', ${prop.required ? 'true' : 'false'}, '${escapeHtml((prop.description || '').replace(/'/g, "\\'"))}'); event.stopPropagation();"
                         class="text-xs text-green-600 hover:text-green-800 hover:underline cursor-pointer transition-colors inline-flex items-center gap-0.5 ml-1"
                         title="Ver propiedades del objeto"
                       >
