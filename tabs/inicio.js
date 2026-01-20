@@ -608,11 +608,11 @@ function focusModelCard(modelKey) {
   if (card) {
     // Remover el highlight anterior
     document.querySelectorAll('.model-card-highlight').forEach(el => {
-      el.classList.remove('model-card-highlight');
+      el.classList.remove('model-card-highlight', 'model-card-highlight-enter');
     });
     
-    // Agregar clase de highlight a la tarjeta
-    card.classList.add('model-card-highlight');
+    // Agregar clase de highlight permanente a la tarjeta
+    card.classList.add('model-card-highlight', 'model-card-highlight-enter');
     
     // Scroll suave a la tarjeta
     card.scrollIntoView({ 
@@ -621,22 +621,85 @@ function focusModelCard(modelKey) {
       inline: 'nearest'
     });
     
-    // Remover el highlight después de 2 segundos
+    // Remover la clase de animación después de la animación
     setTimeout(() => {
-      card.classList.remove('model-card-highlight');
-    }, 2000);
+      card.classList.remove('model-card-highlight-enter');
+    }, 500);
   } else {
     console.warn(`No se encontró la tarjeta del modelo: ${modelKey}`);
   }
 }
 
 function attachCardFocusListeners() {
-  // Los listeners se agregan directamente en el HTML con onclick
-  // Esta función está aquí por si necesitamos agregar más funcionalidad
+  // Agregar event listeners a todas las tarjetas para resaltado al hacer clic
+  document.querySelectorAll('[id^="model-card-"]').forEach(card => {
+    card.addEventListener('click', function(e) {
+      // Evitar que el clic en botones dentro de la tarjeta active el resaltado
+      if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+        return;
+      }
+      const modelKey = this.id.replace('model-card-', '');
+      focusModelCard(modelKey);
+    });
+  });
 }
 
-// Exportar función para uso global
+// Función para mostrar modal con propiedades de objeto
+function showObjectPropertiesModal(propName, propType, isRequired, description) {
+  const modal = document.getElementById('object-properties-modal');
+  const modalTitle = document.getElementById('object-properties-modal-title');
+  const modalContent = document.getElementById('object-properties-modal-content');
+  
+  if (!modal || !modalTitle || !modalContent) {
+    console.error('Modal de propiedades de objeto no encontrado');
+    return;
+  }
+  
+  modalTitle.textContent = `Propiedades del objeto: ${escapeHtml(propName)}`;
+  
+  // Construir contenido del modal
+  let contentHtml = `
+    <div class="space-y-3">
+      <div class="border-b border-gray-200 pb-2">
+        <div class="text-xs uppercase tracking-wider text-gray-600 mb-1">Tipo</div>
+        <div class="text-sm font-medium text-gray-800">${formatType(propType)}</div>
+      </div>
+      ${description ? `
+      <div class="border-b border-gray-200 pb-2">
+        <div class="text-xs uppercase tracking-wider text-gray-600 mb-1">Descripción</div>
+        <div class="text-sm text-gray-700">${escapeHtml(description)}</div>
+      </div>
+      ` : ''}
+      <div class="border-b border-gray-200 pb-2">
+        <div class="text-xs uppercase tracking-wider text-gray-600 mb-1">Requerido</div>
+        <div class="text-sm text-gray-700">${isRequired === 'true' || isRequired === true ? 'Sí' : 'No'}</div>
+      </div>
+      <div class="pt-2">
+        <div class="text-xs uppercase tracking-wider text-gray-600 mb-2">Nota</div>
+        <div class="text-xs text-gray-500 bg-gray-50 p-3 rounded">
+          Este es un objeto flexible que puede contener cualquier estructura de datos clave-valor. 
+          Las propiedades específicas se definen dinámicamente según el uso en la aplicación.
+        </div>
+      </div>
+    </div>
+  `;
+  
+  modalContent.innerHTML = contentHtml;
+  modal.classList.remove('hidden');
+}
+
+// Función para cerrar modal de propiedades de objeto
+function closeObjectPropertiesModal() {
+  const modal = document.getElementById('object-properties-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+// Exportar funciones para uso global
 window.focusModelCard = focusModelCard;
+window.showObjectPropertiesModal = showObjectPropertiesModal;
+window.closeObjectPropertiesModal = closeObjectPropertiesModal;
 
 function renderModelCard(key, modelo) {
   const isSingle = modelo.isSingle || false;
@@ -647,7 +710,7 @@ function renderModelCard(key, modelo) {
   const cardId = `model-card-${key}`;
   
   return `
-    <div id="${cardId}" class="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:border-red-600 transition-colors scroll-mt-8">
+    <div id="${cardId}" class="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 hover:border-red-600 transition-colors scroll-mt-8 cursor-pointer" onclick="focusModelCard('${key}')">
       <div class="mb-3">
         <div class="flex items-center justify-between mb-1.5">
           <h3 class="text-base font-medium text-gray-800">${escapeHtml(modelo.name)}</h3>
@@ -680,6 +743,9 @@ function renderModelCard(key, modelo) {
                 relatedModel = prop.relation;
               }
               
+              // Detectar si es un objeto
+              const isObject = prop.type === 'object' || (prop.type.includes('object') && !prop.type.includes('[]'));
+              
               return `
               <div class="border-l-2 ${prop.required ? 'border-red-600' : 'border-gray-300'} pl-1.5 py-0.5">
                 <div class="flex items-center justify-between gap-2">
@@ -687,6 +753,16 @@ function renderModelCard(key, modelo) {
                     <span class="text-xs font-medium text-gray-800">${escapeHtml(prop.name)}</span>
                     ${prop.required ? '<span class="text-xs text-red-600">*</span>' : ''}
                     <span class="text-xs text-gray-400">${formatType(prop.type)}</span>
+                    ${isObject ? `
+                      <button 
+                        onclick="showObjectPropertiesModal('${escapeHtml(prop.name)}', '${escapeHtml(prop.type)}', ${prop.required ? 'true' : 'false'}, '${escapeHtml(prop.description || '')}'); event.stopPropagation();"
+                        class="text-xs text-green-600 hover:text-green-800 hover:underline cursor-pointer transition-colors inline-flex items-center gap-0.5 ml-1"
+                        title="Ver propiedades del objeto"
+                      >
+                        <span>📋</span>
+                        <span>Ver objeto</span>
+                      </button>
+                    ` : ''}
                   </div>
                 </div>
                 ${prop.description ? `<div class="text-xs text-gray-500 leading-tight">${escapeHtml(prop.description)}</div>` : ''}
