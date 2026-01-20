@@ -231,22 +231,71 @@ function initApp() {
     }
   });
 
+  // Tab switching
+  function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.classList.add('hidden');
+    });
+    
+    // Remove active state from all tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('border-red-600', 'text-red-600');
+      btn.classList.add('border-transparent', 'text-gray-600');
+    });
+    
+    // Show selected tab
+    const selectedTab = document.getElementById(`${tabName}-tab`);
+    if (selectedTab) {
+      selectedTab.classList.remove('hidden');
+    }
+    
+    // Activate selected tab button
+    const selectedBtn = document.querySelector(`[data-tab="${tabName}"]`);
+    if (selectedBtn) {
+      selectedBtn.classList.remove('border-transparent', 'text-gray-600');
+      selectedBtn.classList.add('border-red-600', 'text-red-600');
+    }
+    
+    currentTab = tabName;
+    
+    // Load tab content
+    if (tabName === 'inicio') {
+      if (window.initializeInicio && typeof window.initializeInicio === 'function') {
+        window.initializeInicio();
+      }
+    } else if (tabName === 'fcm-tokens') {
+      if (window.initializeFCMTokens && typeof window.initializeFCMTokens === 'function') {
+        window.initializeFCMTokens();
+      }
+      if (window.loadFCMTokensTab && typeof window.loadFCMTokensTab === 'function') {
+        window.loadFCMTokensTab();
+      }
+    }
+  }
+  
+  // Setup tab buttons
+  function setupTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabName = btn.dataset.tab;
+        if (tabName) {
+          switchTab(tabName);
+        }
+      });
+    });
+  }
+
   // Handle auth state changes
   onAuthStateChanged((user) => {
     if (user) {
       showApp();
-      // Esperar a que el DOM esté listo y los scripts cargados
-      const tryInitializeInicio = () => {
-        if (window.initializeInicio && typeof window.initializeInicio === 'function') {
-          console.log('Inicializando tab inicio...');
-          window.initializeInicio();
-        } else {
-          console.warn('initializeInicio no disponible aún, reintentando...');
-          setTimeout(tryInitializeInicio, 50);
-        }
-      };
-      // Esperar un poco para que los scripts se carguen
-      setTimeout(tryInitializeInicio, 100);
+      // Setup tabs first
+      setTimeout(() => {
+        setupTabs();
+        // Default to inicio tab
+        switchTab('inicio');
+      }, 100);
     } else {
       showLogin();
       cleanup();
@@ -266,6 +315,13 @@ function initApp() {
     if (window.cleanupInicio) {
       window.cleanupInicio();
     }
+    
+    // Cleanup FCM tokens tab
+    if (window.cleanupFCMTokens) {
+      window.cleanupFCMTokens();
+    }
+    
+    currentTab = null;
   }
 
   function renderEntityList(container, entity) {

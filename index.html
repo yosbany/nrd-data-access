@@ -66,6 +66,7 @@
     <script src="https://cdn.jsdelivr.net/gh/yosbany/nrd-data-access@main/dist/nrd-data-access.js"></script>
     <script src="auth.js"></script>
     <script src="tabs/inicio.js"></script>
+    <script src="tabs/fcm-tokens.js"></script>
     <script src="app.js"></script>
     
     <!-- PWA Install -->
@@ -177,13 +178,122 @@
             </div>
         </header>
 
+        <!-- Navigation Tabs -->
+        <nav class="bg-white border-b border-gray-200 flex overflow-x-auto sticky top-[45px] sm:top-[53px] z-10">
+            <button class="tab-btn flex-1 px-3 sm:px-4 py-3 sm:py-3.5 border-b-2 border-red-600 text-red-600 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light" data-tab="inicio">Modelos</button>
+            <button class="tab-btn flex-1 px-3 sm:px-4 py-3 sm:py-3.5 border-b-2 border-transparent text-gray-600 hover:text-red-600 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light" data-tab="fcm-tokens">Tokens FCM</button>
+        </nav>
 
         <!-- Main Content -->
         <main class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-            <!-- Entity Content will be rendered here by app.js -->
-            <div id="entity-content">
-                <div class="text-center py-12 text-gray-500">
-                    <p class="text-lg">Cargando modelos...</p>
+            <!-- Tab: Inicio (Modelos) -->
+            <div id="inicio-tab" class="tab-content">
+                <div id="entity-content">
+                    <div class="text-center py-12 text-gray-500">
+                        <p class="text-lg">Cargando modelos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: FCM Tokens -->
+            <div id="fcm-tokens-tab" class="tab-content hidden">
+                <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-light tracking-tight text-gray-800 mb-1">Gestión de Tokens FCM</h2>
+                        <p class="text-sm sm:text-base text-gray-600">Gestiona tokens y envía notificaciones a dispositivos</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="new-fcm-token-btn" class="px-4 py-2 bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
+                            Nuevo Token
+                        </button>
+                        <button id="send-notification-btn" class="px-4 py-2 bg-green-600 text-white border border-green-600 hover:bg-green-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
+                            Enviar Notificación
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <input type="text" id="fcm-tokens-search-input" placeholder="Buscar tokens..." 
+                        class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm rounded">
+                </div>
+                
+                <div id="fcm-tokens-list" class="space-y-3"></div>
+                
+                <!-- Formulario de Token -->
+                <div id="fcm-token-form" class="border border-gray-200 p-4 mt-4 hidden">
+                    <div class="mb-4 border-b border-gray-200 pb-4 flex justify-between items-center">
+                        <h3 id="fcm-token-form-title" class="text-lg font-light">Nuevo Token FCM</h3>
+                        <button id="close-fcm-token-form" class="text-gray-400 hover:text-red-600 text-xl">×</button>
+                    </div>
+                    <form id="fcm-token-form-element">
+                        <input type="hidden" id="fcm-token-id">
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Token FCM *</label>
+                            <input type="text" id="fcm-token-token" required 
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Nombre del Dispositivo</label>
+                            <input type="text" id="fcm-token-device-name" 
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Plataforma</label>
+                            <select id="fcm-token-platform" 
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm">
+                                <option value="">Seleccione...</option>
+                                <option value="android">Android</option>
+                                <option value="ios">iOS</option>
+                                <option value="web">Web</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="fcm-token-active" checked class="mr-2">
+                                <span class="text-xs uppercase tracking-wider text-gray-600">Activo</span>
+                            </label>
+                        </div>
+                        <div class="flex gap-2 pt-4 border-t border-gray-200">
+                            <button type="submit" id="save-fcm-token-btn"
+                                class="flex-1 px-4 py-2 bg-green-600 text-white border border-green-600 hover:bg-green-700 transition-colors uppercase tracking-wider text-xs font-light">
+                                Guardar
+                            </button>
+                            <button type="button" id="cancel-fcm-token-btn" 
+                                class="flex-1 px-4 py-2 border border-gray-300 hover:border-red-600 hover:text-red-600 transition-colors uppercase tracking-wider text-xs font-light">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Formulario de Notificación -->
+                <div id="notification-form" class="border border-gray-200 p-4 mt-6 hidden">
+                    <div class="mb-4 border-b border-gray-200 pb-4 flex justify-between items-center">
+                        <h3 class="text-lg font-light">Enviar Notificación</h3>
+                        <button id="close-notification-form" class="text-gray-400 hover:text-red-600 text-xl">×</button>
+                    </div>
+                    <form id="notification-form-element">
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Título *</label>
+                            <input type="text" id="notification-title" required 
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Mensaje *</label>
+                            <textarea id="notification-message" required rows="4"
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm"></textarea>
+                        </div>
+                        <div class="flex gap-2 pt-4 border-t border-gray-200">
+                            <button type="submit" id="send-notification-btn-submit"
+                                class="flex-1 px-4 py-2 bg-green-600 text-white border border-green-600 hover:bg-green-700 transition-colors uppercase tracking-wider text-xs font-light">
+                                Enviar Notificación
+                            </button>
+                            <button type="button" id="cancel-notification-btn" 
+                                class="flex-1 px-4 py-2 border border-gray-300 hover:border-red-600 hover:text-red-600 transition-colors uppercase tracking-wider text-xs font-light">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </main>
@@ -255,6 +365,66 @@
                     id="confirm-modal-confirm"
                     class="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors uppercase tracking-wider text-xs font-light"
                 >
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Confirmation Modal -->
+    <div id="notification-confirm-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full border border-gray-200 shadow-lg">
+            <div class="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-lg sm:text-xl font-light tracking-tight">Confirmar Envío</h3>
+                <button id="close-notification-confirm-modal" class="text-gray-400 hover:text-red-600 text-xl font-light">×</button>
+            </div>
+            <div class="p-4 sm:p-6 space-y-4">
+                <p class="text-sm sm:text-base text-gray-700 text-center mb-4">
+                    ¿Cómo desea enviar la notificación?
+                </p>
+                <div class="space-y-3">
+                    <button id="notification-send-now-btn" 
+                        class="w-full px-4 py-3 bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light rounded">
+                        <div class="flex items-center justify-center gap-2">
+                            <span>⚡</span>
+                            <span>Enviar Ahora</span>
+                        </div>
+                        <div class="text-xs font-light mt-1 opacity-90">
+                            Ejecutar workflow inmediatamente
+                        </div>
+                    </button>
+                    <button id="notification-send-scheduled-btn" 
+                        class="w-full px-4 py-3 bg-gray-600 text-white border border-gray-600 hover:bg-gray-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light rounded">
+                        <div class="flex items-center justify-center gap-2">
+                            <span>⏰</span>
+                            <span>Programado</span>
+                        </div>
+                        <div class="text-xs font-light mt-1 opacity-90">
+                            Se enviará en los próximos 5 minutos
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Result Modal -->
+    <div id="notification-result-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full border border-gray-200 shadow-lg">
+            <div class="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between">
+                <h3 id="notification-result-title" class="text-lg sm:text-xl font-light tracking-tight">Resultado del Envío</h3>
+                <button id="close-notification-result-modal" class="text-gray-400 hover:text-red-600 text-xl font-light">×</button>
+            </div>
+            <div class="p-4 sm:p-6 space-y-4">
+                <div id="notification-result-icon" class="text-center text-4xl mb-2"></div>
+                <div id="notification-result-type" class="text-center mb-2">
+                    <span class="inline-block px-3 py-1 rounded-full text-xs font-light uppercase tracking-wider"></span>
+                </div>
+                <p id="notification-result-message" class="text-sm sm:text-base text-gray-700 text-center"></p>
+            </div>
+            <div class="p-4 sm:p-6 border-t border-gray-200">
+                <button id="notification-result-confirm-btn" 
+                    class="w-full px-4 sm:px-6 py-2 bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
                     Confirmar
                 </button>
             </div>
