@@ -115,8 +115,17 @@ const ENTITIES = {
       { key: 'price', label: 'Precio', type: 'number', step: '0.01', required: true },
       { key: 'cost', label: 'Costo', type: 'number', step: '0.01' },
       { key: 'targetMargin', label: 'Margen Objetivo (%)', type: 'number', step: '0.01' },
-      { key: 'active', label: 'Activo', type: 'checkbox', default: true }
-    ]
+      { key: 'active', label: 'Activo', type: 'checkbox', default: true },
+      { key: 'esVendible', label: 'Es Vendible', type: 'checkbox' },
+      { key: 'esComprable', label: 'Es Comprable', type: 'checkbox' },
+      { key: 'esInsumo', label: 'Es Insumo', type: 'checkbox' },
+      { key: 'esProducible', label: 'Es Producible', type: 'checkbox' },
+      { key: 'unidadVenta', label: 'Unidad de Venta', type: 'text', placeholder: 'kg, litro, unidad, caja, etc.' },
+      { key: 'unidadProduccion', label: 'Unidad de Producción', type: 'text', placeholder: 'kg, litro, unidad, etc.' },
+      { key: 'recipeId', label: 'Receta', type: 'select', relation: 'recipes', relationLabel: 'name' },
+      { key: 'supplierId', label: 'Proveedor Referente', type: 'select', relation: 'suppliers', relationLabel: 'name' }
+    ],
+    hasComplexFields: true // For variants, unidadesCompra, conversiones, attributes
   },
   inputs: {
     name: 'Insumos',
@@ -453,6 +462,17 @@ function initApp() {
     if (item.address) return item.address;
     if (item.type) return item.type === 'income' ? 'Ingreso' : 'Egreso';
     if (item.status) return `Estado: ${item.status}`;
+    
+    // Product-specific subtitle
+    if (entity.service === 'products') {
+      const parts = [];
+      if (item.sku) parts.push(`SKU: ${item.sku}`);
+      if (item.price) parts.push(`$${item.price.toFixed(2)}`);
+      if (item.unidadVenta) parts.push(`Venta: ${item.unidadVenta}`);
+      if (item.variants && item.variants.length > 0) parts.push(`${item.variants.length} variante${item.variants.length > 1 ? 's' : ''}`);
+      if (parts.length > 0) return parts.join(' • ');
+    }
+    
     return null;
   }
 
@@ -464,10 +484,29 @@ function initApp() {
     if (field.type === 'number' && typeof value === 'number') {
       return new Intl.NumberFormat('es-UY').format(value);
     }
+    if (field.type === 'checkbox') {
+      return value ? 'Sí' : 'No';
+    }
     if (Array.isArray(value)) {
+      // Handle variants
+      if (field.key === 'variants' && value.length > 0) {
+        return value.map(v => v.name || v.sku || 'Sin nombre').join(', ');
+      }
+      // Handle unidadesCompra
+      if (field.key === 'unidadesCompra' && value.length > 0) {
+        return value.map(u => `${u.unidad} (Proveedor: ${u.supplierId})`).join(', ');
+      }
+      // Handle conversiones
+      if (field.key === 'conversiones' && value.length > 0) {
+        return value.map(c => `1 ${c.fromUnit} = ${c.factor} ${c.toUnit}`).join('; ');
+      }
       return value.join(', ');
     }
     if (typeof value === 'object') {
+      // Handle attributes object
+      if (field.key === 'attributes') {
+        return Object.entries(value).map(([k, v]) => `${k}: ${v}`).join(', ');
+      }
       return JSON.stringify(value, null, 2);
     }
     return String(value);
@@ -505,7 +544,11 @@ function initApp() {
     }
 
     // Build form
-    let formHtml = '<form id="entity-form" class="space-y-4">';
+    let formHtml = '<form id="entity-form" class="space-y-4"';
+    if (itemData) {
+      formHtml += ` data-item-data='${JSON.stringify(itemData).replace(/'/g, "&#39;")}'`;
+    }
+    formHtml += '>';
     
     for (const field of entity.fields) {
       const value = itemData ? itemData[field.key] : (field.default !== undefined ? field.default : '');
@@ -521,8 +564,8 @@ function initApp() {
 
     content.innerHTML = formHtml;
 
-    // Load relation data for select fields
-    await loadRelationData(entity);
+    // Load relation data for select fields (must be after setting innerHTML)
+    await loadRelationData(entity, itemData);
 
     footer.innerHTML = `
       <button 
@@ -611,7 +654,7 @@ function initApp() {
     return html;
   }
 
-  async function loadRelationData(entity) {
+  async function loadRelationData(entity, itemData = null) {
     const selects = document.querySelectorAll('select[data-relation]');
     
     for (const select of selects) {
@@ -635,9 +678,8 @@ function initApp() {
         });
 
         // Set selected value if editing
-        if (!select.multiple && select.form) {
-          const formData = new FormData(select.form);
-          const currentValue = formData.get(select.name);
+        if (!select.multiple && itemData) {
+          const currentValue = itemData[select.name];
           if (currentValue) {
             select.value = currentValue;
           }

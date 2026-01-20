@@ -152,9 +152,23 @@ const MODELOS = {
       { name: 'cost', type: 'number', required: false, description: 'Costo calculado' },
       { name: 'targetMargin', type: 'number', required: false, description: 'Margen objetivo (%)' },
       { name: 'active', type: 'boolean', required: false, description: 'Si el producto está activo' },
+      { name: 'attributes', type: 'object', required: false, description: 'Atributos flexibles (objeto clave-valor)' },
+      { name: 'esVendible', type: 'boolean', required: false, description: 'Indica si el producto es vendible' },
+      { name: 'esComprable', type: 'boolean', required: false, description: 'Indica si el producto es comprable' },
+      { name: 'esInsumo', type: 'boolean', required: false, description: 'Indica si el producto es un insumo' },
+      { name: 'esProducible', type: 'boolean', required: false, description: 'Indica si el producto es producible' },
+      { name: 'unidadVenta', type: 'string', required: false, description: 'Unidad de medida de venta (ej: kg, litro, unidad, caja)' },
+      { name: 'unidadProduccion', type: 'string', required: false, description: 'Unidad de medida de producción (ej: kg, litro, unidad)' },
+      { name: 'unidadesCompra', type: 'PurchaseUnit[]', required: false, description: 'Unidades de medida de compra por proveedor' },
+      { name: 'conversiones', type: 'UnitConversion[]', required: false, description: 'Conversiones entre unidades de medida' },
+      { name: 'recipeId', type: 'string', required: false, description: 'ID de la receta asociada', relation: 'recipes' },
+      { name: 'supplierId', type: 'string', required: false, description: 'ID del proveedor referente para compras', relation: 'suppliers' },
       { name: 'variants', type: 'ProductVariant[]', required: false, description: 'Variantes del producto' }
     ],
-    relations: []
+    relations: [
+      { field: 'recipeId', to: 'recipes', description: 'Receta asociada' },
+      { field: 'supplierId', to: 'suppliers', description: 'Proveedor referente' }
+    ]
   },
   inputs: {
     name: 'Insumos',
