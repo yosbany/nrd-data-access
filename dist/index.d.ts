@@ -27,6 +27,7 @@ import { NotificationsService } from './services/notifications.service';
 import { FCMTokensService } from './services/fcm-tokens.service';
 import { ConfigService } from './services/config.service';
 import { PurchaseOrdersService } from './services/purchase-orders.service';
+import { MeasurementUnitsService } from './services/measurement-units.service';
 export * from './models';
 export { AuthService } from './services/auth.service';
 export { BaseService } from './services/base.service';
@@ -61,6 +62,7 @@ declare class NRDDataAccess {
     fcmTokens: FCMTokensService;
     config: ConfigService;
     purchaseOrders: PurchaseOrdersService;
+    measurementUnits: MeasurementUnitsService;
     constructor();
 }
 export default NRDDataAccess;

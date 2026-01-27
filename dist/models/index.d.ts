@@ -45,6 +45,15 @@ export interface UnitConversion {
     toUnit: string;
     factor: number;
 }
+export interface MeasurementUnit extends BaseEntity {
+    name: string;
+    acronym: string;
+    conversions?: MeasurementUnitConversion[];
+}
+export interface MeasurementUnitConversion {
+    toUnitId: string;
+    factor: number;
+}
 export interface CompanyInfo {
     address?: string;
     email?: string;

@@ -63,6 +63,20 @@ export interface UnitConversion {
   // Ejemplo: 1 kg = 1000 g, entonces factor = 1000
 }
 
+// MeasurementUnit model (Unidad de Medida)
+export interface MeasurementUnit extends BaseEntity {
+  name: string; // Nombre de la unidad (ej: 'Kilogramo', 'Unidad')
+  acronym: string; // Acrónimo de la unidad (ej: 'KG', 'UN')
+  conversions?: MeasurementUnitConversion[]; // Conversiones a otras unidades de medida
+}
+
+// MeasurementUnitConversion model (Conversión de Unidad de Medida)
+export interface MeasurementUnitConversion {
+  toUnitId: string; // ID de la unidad de medida destino
+  factor: number; // Factor de conversión: cantidad en esta unidad * factor = cantidad en toUnit
+  // Ejemplo: Si esta unidad es 'kg' y toUnitId es 'g', factor = 1000 (1 kg = 1000 g)
+}
+
 // CompanyInfo model (single object, not a collection)
 export interface CompanyInfo {
   address?: string;
