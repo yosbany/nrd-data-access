@@ -1,6 +1,20 @@
 export interface BaseEntity {
     id?: string;
 }
+export interface Budget extends BaseEntity {
+    name: string;
+    startDate: number;
+    endDate: number;
+    createdAt?: number;
+    updatedAt?: number;
+    budgets: {
+        [categoryId: string]: {
+            subcategories: {
+                [description: string]: number;
+            };
+        };
+    };
+}
 export interface Account extends BaseEntity {
     name: string;
     active?: boolean;

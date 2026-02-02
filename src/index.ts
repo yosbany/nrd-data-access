@@ -29,6 +29,7 @@ import { FCMTokensService } from './services/fcm-tokens.service';
 import { ConfigService } from './services/config.service';
 import { PurchaseOrdersService } from './services/purchase-orders.service';
 import { MeasurementUnitsService } from './services/measurement-units.service';
+import { BudgetsService } from './services/budgets.service';
 
 // Export all models
 export * from './models';
@@ -37,6 +38,8 @@ export * from './models';
 export { AuthService } from './services/auth.service';
 export { BaseService } from './services/base.service';
 export { ContractsService } from './services/contracts.service';
+export { ProductsService } from './services/products.service';
+export type { ProductsGetOptions, ProductExpanded } from './services/products.service';
 
 // Main library class
 class NRDDataAccess {
@@ -70,6 +73,7 @@ class NRDDataAccess {
   public config: ConfigService;
   public purchaseOrders: PurchaseOrdersService;
   public measurementUnits: MeasurementUnitsService;
+  public budgets: BudgetsService;
 
   constructor() {
     // Initialize Firebase
@@ -106,6 +110,7 @@ class NRDDataAccess {
     this.config = new ConfigService();
     this.purchaseOrders = new PurchaseOrdersService();
     this.measurementUnits = new MeasurementUnitsService();
+    this.budgets = new BudgetsService();
   }
 }
 

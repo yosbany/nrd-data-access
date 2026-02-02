@@ -28,10 +28,13 @@ import { FCMTokensService } from './services/fcm-tokens.service';
 import { ConfigService } from './services/config.service';
 import { PurchaseOrdersService } from './services/purchase-orders.service';
 import { MeasurementUnitsService } from './services/measurement-units.service';
+import { BudgetsService } from './services/budgets.service';
 export * from './models';
 export { AuthService } from './services/auth.service';
 export { BaseService } from './services/base.service';
 export { ContractsService } from './services/contracts.service';
+export { ProductsService } from './services/products.service';
+export type { ProductsGetOptions, ProductExpanded } from './services/products.service';
 declare class NRDDataAccess {
     auth: AuthService;
     accounts: AccountsService;
@@ -63,6 +66,7 @@ declare class NRDDataAccess {
     config: ConfigService;
     purchaseOrders: PurchaseOrdersService;
     measurementUnits: MeasurementUnitsService;
+    budgets: BudgetsService;
     constructor();
 }
 export default NRDDataAccess;

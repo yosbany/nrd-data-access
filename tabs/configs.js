@@ -30,6 +30,33 @@ function showSuccess(message) {
   } else {
     console.log('Configs Success:', message);
   }
+  if (typeof window.NRDCommon !== 'undefined' && window.NRDCommon.showSuccess) {
+    return window.NRDCommon.showSuccess(message);
+  }
+  const alertEl = document.getElementById('custom-alert');
+  const titleEl = document.getElementById('alert-title');
+  const messageEl = document.getElementById('alert-message');
+  const okBtn = document.getElementById('alert-ok');
+  if (alertEl && titleEl && messageEl && okBtn) {
+    return new Promise((resolve) => {
+      titleEl.textContent = 'Éxito';
+      messageEl.textContent = message;
+      alertEl.classList.remove('hidden');
+      const handleOk = () => {
+        alertEl.classList.add('hidden');
+        okBtn.removeEventListener('click', handleOk);
+        resolve();
+      };
+      okBtn.addEventListener('click', handleOk);
+      const handleBg = (e) => {
+        if (e.target === alertEl) {
+          handleOk();
+          alertEl.removeEventListener('click', handleBg);
+        }
+      };
+      alertEl.addEventListener('click', handleBg);
+    });
+  }
   alert(message);
 }
 
@@ -87,7 +114,7 @@ function loadConfigs() {
   // Load configs
   (async () => {
     try {
-      const configs = await nrd.config.getAll();
+      const configs = await nrd.config.getAllWithDetails();
       configsData = configs || {};
       renderConfigs(configsData);
     } catch (error) {
@@ -126,9 +153,12 @@ function renderConfigs(configs) {
   let configsToShow = Object.entries(configs);
   if (configsSearchTerm.trim()) {
     const searchLower = configsSearchTerm.toLowerCase().trim();
-    configsToShow = configsToShow.filter(([key, value]) => {
-      return key.toLowerCase().includes(searchLower) || 
-             (typeof value === 'string' && value.toLowerCase().includes(searchLower));
+    configsToShow = configsToShow.filter(([key, cfg]) => {
+      const c = typeof cfg === 'object' && cfg !== null ? cfg : { name: key, variableName: key, description: '', value: String(cfg) };
+      return (c.name || '').toLowerCase().includes(searchLower) ||
+             (c.variableName || key).toLowerCase().includes(searchLower) ||
+             (c.description || '').toLowerCase().includes(searchLower) ||
+             (c.value || '').toLowerCase().includes(searchLower);
     });
   }
   
@@ -137,20 +167,18 @@ function renderConfigs(configs) {
     return;
   }
 
-  configsToShow.forEach(([key, value]) => {
+  configsToShow.forEach(([key, cfg]) => {
+    const c = typeof cfg === 'object' && cfg !== null ? cfg : { name: key, variableName: key, description: '', value: String(cfg) };
     const item = document.createElement('div');
     item.className = 'border border-gray-200 p-4 hover:border-red-600 transition-colors';
-    
-    // Truncate value if too long
-    const displayValue = typeof value === 'string' && value.length > 100 
-      ? value.substring(0, 100) + '...' 
-      : value;
     
     item.innerHTML = `
       <div class="flex justify-between items-start mb-2">
         <div class="flex-1">
-          <div class="text-base font-light mb-1">${escapeHtml(key)}</div>
-          <div class="text-xs text-gray-500 font-mono break-all">${escapeHtml(String(displayValue))}</div>
+          <div class="text-base font-medium text-gray-800 mb-1">${escapeHtml(c.name || key)}</div>
+          <div class="text-xs text-gray-500 font-mono mb-1">${escapeHtml(c.variableName || key)}</div>
+          ${c.description ? `<div class="text-xs text-gray-600 mb-1">${escapeHtml(c.description)}</div>` : ''}
+          <div class="text-sm text-gray-700 font-mono">${escapeHtml(String(c.value || ''))}</div>
         </div>
       </div>
       <div class="flex gap-2 pt-2 border-t border-gray-200">
@@ -191,15 +219,16 @@ function showConfigForm(key = null) {
   const list = document.getElementById('configs-list');
   const title = document.getElementById('config-form-title');
   const saveBtn = document.getElementById('save-config-btn');
-  const keyInput = document.getElementById('config-key');
-  const keyEditInput = document.getElementById('config-key-edit');
+  const nameInput = document.getElementById('config-name');
+  const variableNameInput = document.getElementById('config-variable-name');
+  const descriptionInput = document.getElementById('config-description');
   const valueInput = document.getElementById('config-value');
+  const keyEditInput = document.getElementById('config-key-edit');
   
   if (!form || !list) return;
   
   form.classList.remove('hidden');
   
-  // Scroll al formulario
   setTimeout(() => {
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 100);
@@ -210,33 +239,33 @@ function showConfigForm(key = null) {
   if (keyEditInput) keyEditInput.value = key || '';
 
   if (key) {
-    // Editing existing config
+    const cfg = configsData[key];
+    const c = typeof cfg === 'object' && cfg !== null ? cfg : { name: key, variableName: key, description: '', value: String(cfg || '') };
     if (title) title.textContent = 'Editar Configuración';
     if (saveBtn) {
       saveBtn.classList.remove('bg-green-600', 'border-green-600', 'hover:bg-green-700');
       saveBtn.classList.add('bg-blue-600', 'border-blue-600', 'hover:bg-blue-700');
     }
-    if (keyInput) {
-      keyInput.value = key;
-      keyInput.disabled = true; // Can't change key when editing
+    if (nameInput) nameInput.value = c.name || key;
+    if (variableNameInput) {
+      variableNameInput.value = c.variableName || key;
+      variableNameInput.disabled = true;
     }
-    if (valueInput) {
-      valueInput.value = configsData[key] || '';
-    }
+    if (descriptionInput) descriptionInput.value = c.description || '';
+    if (valueInput) valueInput.value = c.value || '';
   } else {
-    // New config
     if (title) title.textContent = 'Nueva Configuración';
     if (saveBtn) {
       saveBtn.classList.remove('bg-blue-600', 'border-blue-600', 'hover:bg-blue-700');
       saveBtn.classList.add('bg-green-600', 'border-green-600', 'hover:bg-green-700');
     }
-    if (keyInput) {
-      keyInput.value = '';
-      keyInput.disabled = false; // Can set key when creating
+    if (nameInput) nameInput.value = '';
+    if (variableNameInput) {
+      variableNameInput.value = '';
+      variableNameInput.disabled = false;
     }
-    if (valueInput) {
-      valueInput.value = '';
-    }
+    if (descriptionInput) descriptionInput.value = '';
+    if (valueInput) valueInput.value = '';
   }
 }
 
@@ -245,20 +274,14 @@ function hideConfigForm() {
   const form = document.getElementById('config-form');
   if (form) form.classList.add('hidden');
   
-  // Reset form
-  const keyInput = document.getElementById('config-key');
-  if (keyInput) {
-    keyInput.disabled = false;
-    keyInput.value = '';
-  }
+  const variableNameInput = document.getElementById('config-variable-name');
+  if (variableNameInput) variableNameInput.disabled = false;
   const keyEditInput = document.getElementById('config-key-edit');
   if (keyEditInput) keyEditInput.value = '';
-  const valueInput = document.getElementById('config-value');
-  if (valueInput) valueInput.value = '';
 }
 
 // Save config
-async function saveConfig(key, value) {
+async function saveConfig(item) {
   const nrd = window.nrd;
   if (!nrd) {
     throw new Error('NRD Data Access not initialized');
@@ -267,7 +290,7 @@ async function saveConfig(key, value) {
     throw new Error('ConfigService not available. Please ensure you are using the latest version of nrd-data-access library.');
   }
   
-  await nrd.config.set(key, value);
+  await nrd.config.setConfig(item.variableName, item);
 }
 
 // Delete config handler
@@ -331,15 +354,24 @@ function setupConfigFormHandler() {
     e.preventDefault();
     
     const keyEditInput = document.getElementById('config-key-edit');
-    const keyInput = document.getElementById('config-key');
+    const nameInput = document.getElementById('config-name');
+    const variableNameInput = document.getElementById('config-variable-name');
+    const descriptionInput = document.getElementById('config-description');
     const valueInput = document.getElementById('config-value');
     
     const existingKey = keyEditInput?.value || null;
-    const newKey = keyInput?.value.trim();
-    const value = valueInput?.value.trim();
+    const name = nameInput?.value.trim() || '';
+    const variableName = (variableNameInput?.value || '').trim().replace(/\s+/g, '');
+    const description = descriptionInput?.value.trim() || '';
+    const value = valueInput?.value.trim() || '';
 
-    if (!newKey) {
-      await showError('La clave es requerida');
+    if (!name) {
+      await showError('El nombre es requerido');
+      return;
+    }
+
+    if (!variableName) {
+      await showError('El nombre variable es requerido');
       return;
     }
 
@@ -348,11 +380,15 @@ function setupConfigFormHandler() {
       return;
     }
 
-    // If editing, use existing key; if creating, use new key
-    const keyToUse = existingKey || newKey;
+    const variableNameToUse = existingKey || variableName;
 
     try {
-      await saveConfig(keyToUse, value);
+      await saveConfig({
+        name,
+        variableName: variableNameToUse,
+        description,
+        value
+      });
       hideConfigForm();
       await showSuccess(existingKey ? 'Configuración actualizada exitosamente' : 'Configuración creada exitosamente');
       loadConfigs();
