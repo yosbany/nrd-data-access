@@ -19,11 +19,24 @@ export interface Budget extends BaseEntity {
   };
 }
 
+// Category mapping for bank account reconciliation
+export interface CategoryMapping {
+  descriptionPattern: string; // Patrón de texto que aparece en el movimiento bancario (puede usar regex o texto simple)
+  categoryId: string; // ID de la categoría a asignar
+  subcategory?: string; // Descripción (subcategoría) a asignar
+  type: 'income' | 'expense'; // Tipo de transacción
+  priority?: number; // Prioridad del mapeo (mayor número = mayor prioridad, útil cuando hay múltiples coincidencias)
+}
+
 // Account model
 export interface Account extends BaseEntity {
   name: string;
   active?: boolean;
   initialBalance?: number;
+  isBankAccount?: boolean; // Indica si es una cuenta bancaria
+  categoryMapping?: CategoryMapping[]; // Mapeo de patrones bancarios a categorías/subcategorías (solo para cuentas bancarias)
+  lastReconciliationDate?: number; // Timestamp de la última conciliación
+  lastBankBalance?: number; // Último saldo bancario registrado
 }
 
 // Area model
@@ -221,6 +234,10 @@ export interface Transaction extends BaseEntity {
   description?: string;
   date: number;
   createdAt?: number;
+  notes?: string;
+  reconciled?: boolean;
+  reconciledDate?: number;
+  idHashBancario?: string; // Hash único para identificar movimientos bancarios y evitar duplicados
 }
 
 // Contract model

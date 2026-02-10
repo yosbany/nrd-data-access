@@ -15,10 +15,21 @@ export interface Budget extends BaseEntity {
         };
     };
 }
+export interface CategoryMapping {
+    descriptionPattern: string;
+    categoryId: string;
+    subcategory?: string;
+    type: 'income' | 'expense';
+    priority?: number;
+}
 export interface Account extends BaseEntity {
     name: string;
     active?: boolean;
     initialBalance?: number;
+    isBankAccount?: boolean;
+    categoryMapping?: CategoryMapping[];
+    lastReconciliationDate?: number;
+    lastBankBalance?: number;
 }
 export interface Area extends BaseEntity {
     name: string;
@@ -181,6 +192,10 @@ export interface Transaction extends BaseEntity {
     description?: string;
     date: number;
     createdAt?: number;
+    notes?: string;
+    reconciled?: boolean;
+    reconciledDate?: number;
+    idHashBancario?: string;
 }
 export interface Contract extends BaseEntity {
     name: string;
