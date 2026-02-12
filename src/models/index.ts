@@ -182,6 +182,7 @@ export interface Product extends BaseEntity {
   conversiones?: UnitConversion[]; // Conversiones entre unidades de medida
   recipeId?: string; // ID de la receta asociada al producto
   supplierId?: string; // ID del proveedor referente para compras (proveedor principal por defecto)
+  tags?: string[]; // Etiquetas para agrupar productos (ej: 'LUNCH', 'BREAKFAST') - varios posibles
 }
 
 // ProductVariant model
@@ -203,6 +204,7 @@ export interface ProductVariant {
   conversiones?: UnitConversion[]; // Conversiones entre unidades de medida
   recipeId?: string; // ID de la receta asociada a la variante (si existe, la receta es específica para esta variante)
   supplierId?: string; // ID del proveedor referente para compras (proveedor principal por defecto)
+  tags?: string[]; // Etiquetas para agrupar (hereda del padre si no se especifica)
 }
 
 // Role model

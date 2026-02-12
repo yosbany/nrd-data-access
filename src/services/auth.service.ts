@@ -1,6 +1,7 @@
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
+  signInAnonymously,
   signOut,
   onAuthStateChanged,
   User,
@@ -9,6 +10,15 @@ import {
 import { getFirebaseAuth } from '../config/firebase';
 
 export class AuthService {
+  /**
+   * Sign in anonymously. Use for public/catalog apps that need Firebase access without user registration.
+   * Enable "Anonymous" in Firebase Console → Authentication → Sign-in method.
+   */
+  async signInAnonymously(): Promise<UserCredential> {
+    const auth = getFirebaseAuth();
+    return signInAnonymously(auth);
+  }
+
   /**
    * Sign in with email and password
    */
