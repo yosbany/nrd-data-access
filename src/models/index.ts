@@ -456,3 +456,49 @@ export interface PurchaseOrderItem {
   quantity: number;          // Cantidad
   price: number;             // Precio unitario
 }
+
+// Catalog config (single node for client catalog app - products overlay, categories, options)
+export interface CatalogProductOption {
+  optionId: string;
+  variantSkus: { [choiceId: string]: string }; // choiceId -> SKU
+}
+
+/** La key en catalogConfig.products es el SKU del sistema (producto o variante). */
+export interface CatalogProductConfig {
+  name: string;
+  image?: string;            // Ruta estática en la app cliente (opcional)
+  category: string;
+  description?: string;
+  price?: number;            // Precio en catálogo (opcional; si no se define se usa del producto)
+  options?: CatalogProductOption[];
+}
+
+export interface CatalogCategory {
+  id: string;
+  name: string;
+  tag?: string;              // Tag para filtrar productos (ej: PANADERIA)
+}
+
+export interface CatalogOptionChoice {
+  id: string;
+  name: string;
+  sku?: string;             // SKU del producto o variante del sistema (obligatorio en UI al guardar)
+  priceAdjustment?: number;  // Ajuste de precio (ej. +50)
+}
+
+export interface CatalogOptionDef {
+  label: string;
+  productSkus?: string[];   // SKUs del catálogo a los que aplica este grupo (obligatorio al configurar)
+  choices: CatalogOptionChoice[];
+}
+
+export interface CatalogConfig {
+  products?: { [sku: string]: CatalogProductConfig };
+  categories?: CatalogCategory[];
+  optionsCatalog?: { [optionId: string]: CatalogOptionDef };
+  shippingCost?: number;
+  minimumForShipping?: number;
+  estimatedMinutes?: string;
+  brandName?: string;
+  tagline?: string;
+}

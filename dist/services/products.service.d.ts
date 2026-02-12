@@ -2,11 +2,13 @@ import { BaseService } from './base.service';
 import { Product } from '../models';
 /**
  * Producto expandido: cuando withVariants=true, cada variante se devuelve como item con todos los campos.
- * Incluye productId (padre) y variantId para identificar la variante.
+ * Se identifica por SKU único: producto y variantes se enlazan por SKU (el id es el mismo para producto y variantes).
  */
 export interface ProductExpanded extends Product {
     productId: string;
     variantId?: string;
+    /** SKU único de la variante (variant.sku o productId_variantId si no hay sku). Enlace por SKU. */
+    sku?: string;
     productName?: string;
 }
 /**
@@ -20,6 +22,12 @@ export interface ProductsGetOptions {
      * - undefined: Sin filtro, todos los productos.
      */
     withVariants?: boolean;
+    /**
+     * - true: Una sola lista con todos los ítems: cada producto padre como una línea,
+     *         cada variante como otra línea. Productos sin variantes aparecen como una línea.
+     * - undefined/false: Comportamiento según withVariants.
+     */
+    flat?: boolean;
 }
 export declare class ProductsService extends BaseService<Product> {
     constructor();
@@ -27,7 +35,12 @@ export declare class ProductsService extends BaseService<Product> {
      * Get all products, optionally filtered/expanded by variants.
      * - withVariants: true → Un item por variante (cada variante es un producto completo).
      * - withVariants: false → Solo padres sin variantes.
+     * - flat: true → Una lista: padres (cada uno una línea) y variantes (cada una una línea).
      */
     getAll(options?: ProductsGetOptions): Promise<(Product | ProductExpanded)[]>;
+    /**
+     * Lista plana: producto padre como una línea, cada variante como otra línea; productos sin variantes como una línea.
+     */
+    private getAllFlat;
 }
 //# sourceMappingURL=products.service.d.ts.map

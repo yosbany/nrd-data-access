@@ -27,6 +27,7 @@ import { AguinaldoService } from './services/aguinaldo.service';
 import { NotificationsService } from './services/notifications.service';
 import { FCMTokensService } from './services/fcm-tokens.service';
 import { ConfigService } from './services/config.service';
+import { CatalogConfigService } from './services/catalog-config.service';
 import { PurchaseOrdersService } from './services/purchase-orders.service';
 import { MeasurementUnitsService } from './services/measurement-units.service';
 import { BudgetsService } from './services/budgets.service';
@@ -71,6 +72,7 @@ class NRDDataAccess {
   public notifications: NotificationsService;
   public fcmTokens: FCMTokensService;
   public config: ConfigService;
+  public catalogConfig: CatalogConfigService;
   public purchaseOrders: PurchaseOrdersService;
   public measurementUnits: MeasurementUnitsService;
   public budgets: BudgetsService;
@@ -108,6 +110,7 @@ class NRDDataAccess {
     this.notifications = new NotificationsService();
     this.fcmTokens = new FCMTokensService();
     this.config = new ConfigService();
+    this.catalogConfig = new CatalogConfigService();
     this.purchaseOrders = new PurchaseOrdersService();
     this.measurementUnits = new MeasurementUnitsService();
     this.budgets = new BudgetsService();

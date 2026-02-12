@@ -378,4 +378,49 @@ export interface PurchaseOrderItem {
     quantity: number;
     price: number;
 }
+export interface CatalogProductOption {
+    optionId: string;
+    variantSkus: {
+        [choiceId: string]: string;
+    };
+}
+/** La key en catalogConfig.products es el SKU del sistema (producto o variante). */
+export interface CatalogProductConfig {
+    name: string;
+    image?: string;
+    category: string;
+    description?: string;
+    price?: number;
+    options?: CatalogProductOption[];
+}
+export interface CatalogCategory {
+    id: string;
+    name: string;
+    tag?: string;
+}
+export interface CatalogOptionChoice {
+    id: string;
+    name: string;
+    sku?: string;
+    priceAdjustment?: number;
+}
+export interface CatalogOptionDef {
+    label: string;
+    productSkus?: string[];
+    choices: CatalogOptionChoice[];
+}
+export interface CatalogConfig {
+    products?: {
+        [sku: string]: CatalogProductConfig;
+    };
+    categories?: CatalogCategory[];
+    optionsCatalog?: {
+        [optionId: string]: CatalogOptionDef;
+    };
+    shippingCost?: number;
+    minimumForShipping?: number;
+    estimatedMinutes?: string;
+    brandName?: string;
+    tagline?: string;
+}
 //# sourceMappingURL=index.d.ts.map
