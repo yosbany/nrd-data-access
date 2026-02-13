@@ -9,63 +9,64 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css?v=1770937489271">
+    <link rel="stylesheet" href="styles.css?v=1771025664864">
     
-    <!-- Force cache reload with version parameter in URL -->
+    <!-- Validate version against server: if server has newer build, force reload to avoid stale cache -->
     <script>
       (function() {
-        // Get current version from stylesheet link (this is the source of truth)
-        const stylesheet = document.querySelector('link[href*="styles.css"]');
-        const versionMatch = stylesheet ? stylesheet.href.match(/[?&]v=(\d+)/) : null;
-        
-        // Only proceed if we have a version in the stylesheet
-        if (!versionMatch) {
-          return; // No version in stylesheet, skip cache busting
+        var link = document.querySelector('link[rel="stylesheet"][href*=".css"]');
+        var localVersion = link && link.href.match(/[?&]v=(\d+)/) ? link.href.match(/[?&]v=(\d+)/)[1] : null;
+        var urlParams = new URLSearchParams(window.location.search);
+        var urlVersion = urlParams.get('v');
+
+        function applyUrlSync() {
+          if (urlVersion !== localVersion && localVersion) {
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                regs.forEach(function(r) { r.unregister(); });
+              });
+            }
+            if ('caches' in window) {
+              caches.keys().then(function(names) {
+                names.forEach(function(n) { caches.delete(n); });
+              });
+            }
+            var url = new URL(window.location.href);
+            url.searchParams.set('v', localVersion);
+            window.location.replace(url.toString());
+          }
         }
-        
-        const currentVersion = versionMatch[1];
-        
-        // Get version from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlVersion = urlParams.get('v');
-        
-        // If URL version doesn't match current version, reload with new version
-        // But only if URL version exists (to avoid infinite loops)
-        if (urlVersion && urlVersion !== currentVersion) {
-          // Clear service worker cache if available
-          if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(registrations) {
-              for(let registration of registrations) {
-                registration.unregister();
+
+        if (!localVersion) {
+          applyUrlSync();
+          return;
+        }
+
+        fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(data) {
+            if (data && data.v != null) {
+              var serverVersion = String(data.v);
+              if (serverVersion !== localVersion) {
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.getRegistrations().then(function(regs) {
+                    regs.forEach(function(r) { r.unregister(); });
+                  });
+                }
+                if ('caches' in window) {
+                  caches.keys().then(function(names) {
+                    names.forEach(function(n) { caches.delete(n); });
+                  });
+                }
+                var url = new URL(window.location.href);
+                url.searchParams.set('v', serverVersion);
+                window.location.replace(url.toString());
+                return;
               }
-            });
-          }
-          
-          // Clear all caches
-          if ('caches' in window) {
-            caches.keys().then(function(names) {
-              for (let name of names) {
-                caches.delete(name);
-        }
-            });
-          }
-          
-          // Reload with new version
-          const url = new URL(window.location.href);
-          url.searchParams.set('v', currentVersion);
-          window.location.replace(url.toString());
-        } else if (!urlVersion && currentVersion) {
-          // If no version in URL but we have one in stylesheet, add it (first load)
-          const url = new URL(window.location.href);
-          url.searchParams.set('v', currentVersion);
-          window.history.replaceState({}, '', url.toString());
-        } else if (!urlVersion && !currentVersion) {
-          // If no version at all, generate one and add it
-          const newVersion = Date.now();
-          const url = new URL(window.location.href);
-          url.searchParams.set('v', newVersion);
-          window.history.replaceState({}, '', url.toString());
-        }
+            }
+            applyUrlSync();
+          })
+          .catch(function() { applyUrlSync(); });
       })();
     </script>
     
@@ -83,11 +84,11 @@
         document.write('<script src="' + src + '"><\/script>');
       })();
     </script>
-    <script src="auth.js?v=1770937489271"></script>
-    <script src="tabs/inicio.js?v=1770937489271"></script>
-    <script src="tabs/fcm-tokens.js?v=1770937489271"></script>
-    <script src="tabs/configs.js?v=1770937489271"></script>
-    <script src="app.js?v=1770937489271"></script>
+    <script src="auth.js?v=1771025664864"></script>
+    <script src="tabs/inicio.js?v=1771025664864"></script>
+    <script src="tabs/fcm-tokens.js?v=1771025664864"></script>
+    <script src="tabs/configs.js?v=1771025664864"></script>
+    <script src="app.js?v=1771025664864"></script>
     
     <!-- PWA Install -->
     <script>
