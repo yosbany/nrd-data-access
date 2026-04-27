@@ -146,6 +146,7 @@ export interface Product extends BaseEntity {
     conversiones?: UnitConversion[];
     recipeId?: string;
     supplierId?: string;
+    supplierCode?: string;
     tags?: string[];
 }
 export interface ProductVariant {
@@ -168,7 +169,18 @@ export interface ProductVariant {
     conversiones?: UnitConversion[];
     recipeId?: string;
     supplierId?: string;
+    supplierCode?: string;
     tags?: string[];
+}
+export interface StockCount extends BaseEntity {
+    productId: string;
+    /** Si se contó una variante, su SKU; omitir o vacío = producto padre */
+    variantSku?: string;
+    productName?: string;
+    variantName?: string;
+    quantity: number;
+    notes?: string;
+    createdAt: number;
 }
 export interface Role extends BaseEntity {
     name: string;

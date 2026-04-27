@@ -31,6 +31,7 @@ import { CatalogConfigService } from './services/catalog-config.service';
 import { PurchaseOrdersService } from './services/purchase-orders.service';
 import { MeasurementUnitsService } from './services/measurement-units.service';
 import { BudgetsService } from './services/budgets.service';
+import { StockCountsService } from './services/stock-counts.service';
 
 // Export all models
 export * from './models';
@@ -41,6 +42,7 @@ export { BaseService } from './services/base.service';
 export { ContractsService } from './services/contracts.service';
 export { ProductsService } from './services/products.service';
 export type { ProductsGetOptions, ProductExpanded } from './services/products.service';
+export { StockCountsService } from './services/stock-counts.service';
 
 // Main library class
 class NRDDataAccess {
@@ -76,6 +78,7 @@ class NRDDataAccess {
   public purchaseOrders: PurchaseOrdersService;
   public measurementUnits: MeasurementUnitsService;
   public budgets: BudgetsService;
+  public stockCounts: StockCountsService;
 
   constructor() {
     // Initialize Firebase
@@ -114,6 +117,7 @@ class NRDDataAccess {
     this.purchaseOrders = new PurchaseOrdersService();
     this.measurementUnits = new MeasurementUnitsService();
     this.budgets = new BudgetsService();
+    this.stockCounts = new StockCountsService();
   }
 }
 

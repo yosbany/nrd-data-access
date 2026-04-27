@@ -182,6 +182,7 @@ export interface Product extends BaseEntity {
   conversiones?: UnitConversion[]; // Conversiones entre unidades de medida
   recipeId?: string; // ID de la receta asociada al producto
   supplierId?: string; // ID del proveedor referente para compras (proveedor principal por defecto)
+  supplierCode?: string; // Código del producto en el proveedor (referencia del proveedor)
   tags?: string[]; // Etiquetas para agrupar productos (ej: 'LUNCH', 'BREAKFAST') - varios posibles
 }
 
@@ -204,7 +205,20 @@ export interface ProductVariant {
   conversiones?: UnitConversion[]; // Conversiones entre unidades de medida
   recipeId?: string; // ID de la receta asociada a la variante (si existe, la receta es específica para esta variante)
   supplierId?: string; // ID del proveedor referente para compras (proveedor principal por defecto)
+  supplierCode?: string; // Código del producto/variante en el proveedor (referencia del proveedor)
   tags?: string[]; // Etiquetas para agrupar (hereda del padre si no se especifica)
+}
+
+// Stock count (conteo físico de inventario por producto / variante)
+export interface StockCount extends BaseEntity {
+  productId: string;
+  /** Si se contó una variante, su SKU; omitir o vacío = producto padre */
+  variantSku?: string;
+  productName?: string;
+  variantName?: string;
+  quantity: number;
+  notes?: string;
+  createdAt: number;
 }
 
 // Role model

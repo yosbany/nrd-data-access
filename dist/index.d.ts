@@ -30,12 +30,14 @@ import { CatalogConfigService } from './services/catalog-config.service';
 import { PurchaseOrdersService } from './services/purchase-orders.service';
 import { MeasurementUnitsService } from './services/measurement-units.service';
 import { BudgetsService } from './services/budgets.service';
+import { StockCountsService } from './services/stock-counts.service';
 export * from './models';
 export { AuthService } from './services/auth.service';
 export { BaseService } from './services/base.service';
 export { ContractsService } from './services/contracts.service';
 export { ProductsService } from './services/products.service';
 export type { ProductsGetOptions, ProductExpanded } from './services/products.service';
+export { StockCountsService } from './services/stock-counts.service';
 declare class NRDDataAccess {
     auth: AuthService;
     accounts: AccountsService;
@@ -69,6 +71,7 @@ declare class NRDDataAccess {
     purchaseOrders: PurchaseOrdersService;
     measurementUnits: MeasurementUnitsService;
     budgets: BudgetsService;
+    stockCounts: StockCountsService;
     constructor();
 }
 export default NRDDataAccess;

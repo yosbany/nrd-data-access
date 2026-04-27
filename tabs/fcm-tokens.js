@@ -36,68 +36,6 @@ function showConfirm(title, message) {
   return confirm(message);
 }
 
-// Show notification confirmation modal (returns 'now' or 'scheduled' or null)
-function showNotificationConfirmModal() {
-  return new Promise((resolve) => {
-    const modal = document.getElementById('notification-confirm-modal');
-    const sendNowBtn = document.getElementById('notification-send-now-btn');
-    const sendScheduledBtn = document.getElementById('notification-send-scheduled-btn');
-    const closeBtn = document.getElementById('close-notification-confirm-modal');
-
-    if (!modal || !sendNowBtn || !sendScheduledBtn || !closeBtn) {
-      // Fallback to confirm if modal elements don't exist
-      const result = confirm('¿Cómo desea enviar la notificación?\n\nAceptar = Enviar al momento (ejecutar workflow ahora)\nCancelar = Programada (se enviará en los próximos 5 minutos)');
-      resolve(result ? 'now' : 'scheduled');
-      return;
-    }
-
-    // Show modal
-    modal.classList.remove('hidden');
-
-    // Handle send now
-    const handleSendNow = () => {
-      modal.classList.add('hidden');
-      sendNowBtn.removeEventListener('click', handleSendNow);
-      sendScheduledBtn.removeEventListener('click', handleSendScheduled);
-      closeBtn.removeEventListener('click', handleCancel);
-      modal.removeEventListener('click', handleBackgroundClick);
-      resolve('now');
-    };
-
-    // Handle send scheduled
-    const handleSendScheduled = () => {
-      modal.classList.add('hidden');
-      sendNowBtn.removeEventListener('click', handleSendNow);
-      sendScheduledBtn.removeEventListener('click', handleSendScheduled);
-      closeBtn.removeEventListener('click', handleCancel);
-      modal.removeEventListener('click', handleBackgroundClick);
-      resolve('scheduled');
-    };
-
-    // Handle cancel
-    const handleCancel = () => {
-      modal.classList.add('hidden');
-      sendNowBtn.removeEventListener('click', handleSendNow);
-      sendScheduledBtn.removeEventListener('click', handleSendScheduled);
-      closeBtn.removeEventListener('click', handleCancel);
-      modal.removeEventListener('click', handleBackgroundClick);
-      resolve(null);
-    };
-
-    sendNowBtn.addEventListener('click', handleSendNow);
-    sendScheduledBtn.addEventListener('click', handleSendScheduled);
-    closeBtn.addEventListener('click', handleCancel);
-
-    // Close on background click
-    const handleBackgroundClick = (e) => {
-      if (e.target === modal) {
-        handleCancel();
-      }
-    };
-    modal.addEventListener('click', handleBackgroundClick);
-  });
-}
-
 // Show notification result modal
 function showNotificationResultModal(type, message) {
   return new Promise((resolve) => {
@@ -117,7 +55,14 @@ function showNotificationResultModal(type, message) {
     }
 
     // Set content based on type
-    if (type === 'manual') {
+    if (type === 'saved') {
+      titleEl.textContent = 'Notificación creada';
+      iconEl.textContent = '✅';
+      iconEl.className = 'text-center text-4xl mb-2 text-green-600';
+      typeEl.textContent = 'Registrada';
+      typeEl.className = 'inline-block px-3 py-1 rounded-full text-xs font-light uppercase tracking-wider bg-green-100 text-green-800';
+      messageEl.textContent = message || 'La notificación se guardó en el sistema. El envío push automático a dispositivos no está activo.';
+    } else if (type === 'manual') {
       titleEl.textContent = 'Notificación Enviada';
       iconEl.textContent = '✅';
       iconEl.className = 'text-center text-4xl mb-2 text-green-600';
@@ -130,7 +75,7 @@ function showNotificationResultModal(type, message) {
       iconEl.className = 'text-center text-4xl mb-2 text-blue-600';
       typeEl.textContent = 'Envío Programado';
       typeEl.className = 'inline-block px-3 py-1 rounded-full text-xs font-light uppercase tracking-wider bg-gray-100 text-gray-700';
-      messageEl.textContent = message || 'La notificación se ha creado exitosamente. Se enviará a todos los dispositivos registrados en los próximos 5 minutos.';
+      messageEl.textContent = message || 'Notificación creada en el sistema.';
     } else if (type === 'error') {
       titleEl.textContent = 'Error al Enviar';
       iconEl.textContent = '❌';
@@ -556,116 +501,6 @@ async function sendNotification(notificationData) {
   return notificationId;
 }
 
-// Get GitHub token from Firebase using nrd-data-access
-async function getGitHubToken() {
-  try {
-    const nrd = window.nrd;
-    if (!nrd) {
-      throw new Error('NRD Data Access not initialized');
-    }
-    
-    if (!nrd.config) {
-      throw new Error('ConfigService not available. Please ensure you are using the latest version of nrd-data-access library.');
-    }
-    
-    // Obtener token desde Firebase usando el servicio Config
-    const token = await nrd.config.get('githubToken');
-    
-    if (!token || typeof token !== 'string') {
-      throw new Error('Token de GitHub no configurado en Firebase');
-    }
-    
-    return token;
-  } catch (error) {
-    if (typeof logger !== 'undefined' && logger.error) {
-      logger.error('Failed to get GitHub token from Firebase', error);
-    } else {
-      console.error('Failed to get GitHub token from Firebase', error);
-    }
-    throw error;
-  }
-}
-
-// Trigger GitHub Actions workflow
-async function triggerGitHubWorkflow() {
-  const GITHUB_OWNER = 'yosbany';
-  const GITHUB_REPO = 'nrd-notificacion';
-  const WORKFLOW_FILE = 'process-notifications.yml';
-  
-  // Obtener token desde Firebase
-  let GITHUB_TOKEN;
-  try {
-    GITHUB_TOKEN = await getGitHubToken();
-  } catch (error) {
-    throw new Error('Token de GitHub no configurado en Firebase. No se puede ejecutar el workflow al momento. La notificación se enviará en los próximos 5 minutos.');
-  }
-  
-  const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/workflows/${WORKFLOW_FILE}/dispatches`;
-  
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'Authorization': `Bearer ${GITHUB_TOKEN}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        ref: 'main'
-      })
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage = `GitHub API error: ${response.status}`;
-      try {
-        const errorJson = JSON.parse(errorText);
-        if (errorJson.message) {
-          errorMessage = errorJson.message;
-        }
-      } catch (e) {
-        errorMessage += ` - ${errorText}`;
-      }
-      throw new Error(errorMessage);
-    }
-    
-    // GitHub API returns 204 No Content for successful workflow_dispatch
-    // Check if response has content before trying to parse JSON
-    const contentType = response.headers.get('content-type');
-    const contentLength = response.headers.get('content-length');
-    
-    if (response.status === 204 || contentLength === '0' || !contentType?.includes('application/json')) {
-      // Success with no content (204 No Content)
-      return { success: true, message: 'Workflow triggered successfully' };
-    }
-    
-    // Try to parse JSON only if there's content
-    const text = await response.text();
-    if (!text || text.trim() === '') {
-      return { success: true, message: 'Workflow triggered successfully' };
-    }
-    
-    try {
-      return await JSON.parse(text);
-    } catch (e) {
-      // If JSON parsing fails but status is OK, consider it success
-      if (typeof logger !== 'undefined' && logger.warn) {
-        logger.warn('Could not parse GitHub API response as JSON, but status is OK', { text, status: response.status });
-      } else {
-        console.warn('Could not parse GitHub API response as JSON, but status is OK', { text, status: response.status });
-      }
-      return { success: true, message: 'Workflow triggered successfully' };
-    }
-  } catch (error) {
-    if (typeof logger !== 'undefined' && logger.error) {
-      logger.error('GitHub workflow trigger error', error);
-    } else {
-      console.error('GitHub workflow trigger error', error);
-    }
-    throw error;
-  }
-}
-
 // Notification form submit handler
 let notificationFormHandlerSetup = false;
 function setupNotificationFormHandler() {
@@ -690,45 +525,16 @@ function setupNotificationFormHandler() {
       return;
     }
 
-    // Mostrar modal de confirmación con opciones
-    const sendOption = await showNotificationConfirmModal();
-    
-    // Si el usuario canceló, no hacer nada
-    if (sendOption === null) {
-      return;
-    }
-    
-    const sendNow = sendOption === 'now'; // 'now' = Enviar ahora, 'scheduled' = Programado
-    
     try {
       if (typeof logger !== 'undefined' && logger.debug) {
-        logger.debug('Sending notification', { title, message, sendNow });
+        logger.debug('Sending notification', { title, message });
       }
       const notificationId = await sendNotification({ title, message });
       if (typeof logger !== 'undefined' && logger.info) {
         logger.info('Notification created successfully', { notificationId });
       }
-      
-      // Si es al momento, ejecutar workflow de GitHub Actions
-      if (sendNow) {
-        try {
-          await triggerGitHubWorkflow();
-          // Mostrar modal de resultado manual
-          await showNotificationResultModal('manual', 'La notificación se ha enviado manualmente y se procesará inmediatamente. Se enviará a todos los dispositivos registrados ahora.');
-        } catch (workflowError) {
-          if (typeof logger !== 'undefined' && logger.error) {
-            logger.error('Failed to trigger workflow', workflowError);
-          } else {
-            console.error('Failed to trigger workflow', workflowError);
-          }
-          // Mostrar modal de error pero indicando que se creó
-          await showNotificationResultModal('error', 'Notificación creada pero no se pudo ejecutar el workflow: ' + workflowError.message + '\n\nLa notificación se enviará automáticamente en los próximos 5 minutos.');
-        }
-      } else {
-        // Mostrar modal de resultado programado
-        await showNotificationResultModal('scheduled', 'La notificación se ha creado exitosamente. Se enviará a todos los dispositivos registrados en los próximos 5 minutos.');
-      }
-      
+      await showNotificationResultModal('saved', 'La notificación se guardó en el sistema. El envío push automático a dispositivos no está activo en este despliegue.');
+
       // Reset form
       formElement.reset();
       hideNotificationForm();
