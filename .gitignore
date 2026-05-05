@@ -1,0 +1,9 @@
+node_modules/
+*.log
+.DS_Store
+.env
+.idea/
+.vscode/
+*.json.export
+nrd-db-default-rtdb-export.json
+

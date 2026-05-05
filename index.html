@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#dc2626">
+    <title>NRD Data Access Admin</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css?v=1777313687058">
+    
+    <!-- Version check: if server has newer build, force reload (no URL params) -->
+    <script>
+      (function() {
+        var RELOAD_KEY = 'nrd-version-reload-ts';
+        var RELOAD_COOLDOWN_MS = 15000;
+        var lastReload = parseInt(sessionStorage.getItem(RELOAD_KEY) || '0', 10);
+        if (Date.now() - lastReload < RELOAD_COOLDOWN_MS) return;
+
+        var link = document.querySelector('link[rel="stylesheet"][href*=".css"]');
+        var match = link && link.href && link.href.match(/[?&]v=(\d+)/);
+        var localVersion = match ? String(match[1]) : null;
+        if (!localVersion) return;
+
+        fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(data) {
+            var serverVersion = data && data.v != null ? String(data.v) : null;
+            if (!serverVersion) return;
+            if (serverVersion === localVersion) return;
+
+            sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
+
+            var sw = ('serviceWorker' in navigator)
+              ? navigator.serviceWorker.getRegistrations().then(function(regs) {
+                  regs.forEach(function(r) { r.unregister(); });
+                })
+              : Promise.resolve();
+
+            var cacheClear = ('caches' in window)
+              ? caches.keys().then(function(names) { names.forEach(function(n) { caches.delete(n); }); })
+              : Promise.resolve();
+
+            Promise.all([sw, cacheClear]).finally(function() {
+              window.location.reload();
+            });
+          })
+          .catch(function() {});
+      })();
+    </script>
+    
+    <script>
+      (function() {
+        var isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '0.0.0.0';
+        var src = isLocalhost ? 'dist/nrd-data-access.js' : 'https://cdn.jsdelivr.net/gh/yosbany/nrd-data-access@main/dist/nrd-data-access.js';
+        document.write('<script src="' + src + '"><\/script>');
+      })();
+    </script>
+    <script>
+      (function() {
+        var isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '0.0.0.0';
+        var src = isLocalhost ? '/nrd-common/dist/nrd-common.js' : 'https://cdn.jsdelivr.net/gh/yosbany/nrd-common@main/dist/nrd-common.js';
+        document.write('<script src="' + src + '"><\/script>');
+      })();
+    </script>
+    <script src="auth.js?v=1777313687058"></script>
+    <script src="tabs/inicio.js?v=1777313687058"></script>
+    <script src="tabs/fcm-tokens.js?v=1777313687058"></script>
+    <script src="tabs/configs.js?v=1777313687058"></script>
+    <script src="app.js?v=1777313687058"></script>
+    
+    <!-- PWA Install -->
+    <script>
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const installBtn = document.getElementById('install-btn');
+        if (installBtn) installBtn.classList.remove('hidden');
+      });
+      
+      window.addEventListener('appinstalled', () => {
+        const installBtn = document.getElementById('install-btn');
+        if (installBtn) installBtn.classList.add('hidden');
+        deferredPrompt = null;
+      });
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        const installBtn = document.getElementById('install-btn');
+        if (installBtn) {
+          installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+              alert('Para instalar esta app:\n\nChrome/Edge: Menú → Instalar aplicación\nSafari: Compartir → Añadir a pantalla de inicio\nFirefox: Menú → Instalar');
+              return;
+            }
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+              installBtn.classList.add('hidden');
+        }
+            deferredPrompt = null;
+          });
+        }
+      });
+    </script>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans antialiased">
+    <!-- Vista de Login -->
+    <div id="login-container" class="min-h-screen flex items-center justify-center px-4">
+        <div class="max-w-md w-full bg-white border border-gray-200 rounded-lg p-4 sm:p-6 md:p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-xl sm:text-2xl font-light tracking-tight text-gray-800 mb-2">NRD Data Access Admin</h1>
+                <p class="text-sm sm:text-base text-gray-600">Administración de datos</p>
+            </div>
+            
+            <form id="login-form" class="space-y-6">
+                <div>
+                    <label for="email" class="block mb-1.5 sm:mb-2 text-xs uppercase tracking-wider text-gray-600">
+                        Email
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        autocomplete="email"
+                        required
+                        class="w-full px-0 py-2 border-0 border-b border-gray-300 focus:outline-none focus:border-red-600 bg-transparent text-sm sm:text-base"
+                        placeholder="usuario@email.com"
+                    >
+                </div>
+                
+                <div>
+                    <label for="password" class="block mb-1.5 sm:mb-2 text-xs uppercase tracking-wider text-gray-600">
+                        Contraseña
+                    </label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        autocomplete="current-password"
+                        required
+                        class="w-full px-0 py-2 border-0 border-b border-gray-300 focus:outline-none focus:border-red-600 bg-transparent text-sm sm:text-base"
+                        placeholder="••••••••"
+                    >
+                </div>
+                
+                <div id="error-message" class="hidden text-red-600 text-sm sm:text-base text-center"></div>
+                
+                <button 
+                    type="submit"
+                    class="w-full px-4 sm:px-6 py-2 bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light"
+                >
+                        Iniciar Sesión
+                    </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Vista Principal -->
+    <div id="app-container" class="hidden min-h-screen">
+            <!-- Header -->
+        <header class="bg-red-600 border-b border-red-700 px-3 sm:px-4 py-2.5 sm:py-3 flex justify-between items-center sticky top-0 z-10">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <img src="icon-192.png" alt="NRD Data Access Admin" class="w-8 h-8 sm:w-10 sm:h-10 rounded">
+                <h1 class="text-lg sm:text-xl font-light tracking-tight text-white">NRD Data Access Admin</h1>
+            </div>
+            <div class="flex gap-2 items-center">
+                <button 
+                    id="install-btn"
+                    class="px-3 sm:px-4 py-1.5 sm:py-2 border border-white/30 hover:border-white text-white hover:bg-white/10 transition-colors uppercase tracking-wider text-xs font-light hidden"
+                >
+                    Instalar
+                </button>
+                <button 
+                    id="profile-btn"
+                    class="px-3 sm:px-4 py-1.5 sm:py-2 border border-white/30 hover:border-white text-white hover:bg-white/10 transition-colors uppercase tracking-wider text-xs font-light"
+                >
+                    Perfil
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="bg-white border-b border-gray-200 flex overflow-x-auto sticky top-[45px] sm:top-[53px] z-10">
+            <button class="tab-btn flex-1 px-3 sm:px-4 py-3 sm:py-3.5 border-b-2 border-red-600 text-red-600 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light" data-tab="inicio">Modelos</button>
+            <button class="tab-btn flex-1 px-3 sm:px-4 py-3 sm:py-3.5 border-b-2 border-transparent text-gray-600 hover:text-red-600 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light" data-tab="fcm-tokens">Tokens FCM</button>
+            <button class="tab-btn flex-1 px-3 sm:px-4 py-3 sm:py-3.5 border-b-2 border-transparent text-gray-600 hover:text-red-600 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light" data-tab="configs">Configuraciones</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <!-- Tab: Inicio (Modelos) -->
+            <div id="inicio-tab" class="tab-content">
+                <div id="entity-content">
+                    <div class="text-center py-12 text-gray-500">
+                        <p class="text-lg">Cargando modelos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: FCM Tokens -->
+            <div id="fcm-tokens-tab" class="tab-content hidden">
+                <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-light tracking-tight text-gray-800 mb-1">Gestión de Tokens FCM</h2>
+                        <p class="text-sm sm:text-base text-gray-600">Tokens FCM y registro de notificaciones en Firebase</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="new-fcm-token-btn" class="px-4 py-2 bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
+                            Nuevo Token
+                        </button>
+                        <button id="send-notification-btn" class="px-4 py-2 bg-green-600 text-white border border-green-600 hover:bg-green-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
+                            Enviar Notificación
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <input type="text" id="fcm-tokens-search-input" placeholder="Buscar tokens..." 
+                        class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm rounded">
+                </div>
+                
+                <div id="fcm-tokens-list" class="space-y-3"></div>
+                
+                <!-- Formulario de Token -->
+                <div id="fcm-token-form" class="border border-gray-200 p-4 mt-4 hidden">
+                    <div class="mb-4 border-b border-gray-200 pb-4 flex justify-between items-center">
+                        <h3 id="fcm-token-form-title" class="text-lg font-light">Nuevo Token FCM</h3>
+                        <button id="close-fcm-token-form" class="text-gray-400 hover:text-red-600 text-xl">×</button>
+                    </div>
+                    <form id="fcm-token-form-element">
+                        <input type="hidden" id="fcm-token-id">
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Token FCM *</label>
+                            <input type="text" id="fcm-token-token" required 
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Nombre del Dispositivo</label>
+                            <input type="text" id="fcm-token-device-name" 
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Plataforma</label>
+                            <select id="fcm-token-platform" 
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm">
+                                <option value="">Seleccione...</option>
+                                <option value="android">Android</option>
+                                <option value="ios">iOS</option>
+                                <option value="web">Web</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="fcm-token-active" checked class="mr-2">
+                                <span class="text-xs uppercase tracking-wider text-gray-600">Activo</span>
+                            </label>
+                        </div>
+                        <div class="flex gap-2 pt-4 border-t border-gray-200">
+                            <button type="submit" id="save-fcm-token-btn"
+                                class="flex-1 px-4 py-2 bg-green-600 text-white border border-green-600 hover:bg-green-700 transition-colors uppercase tracking-wider text-xs font-light">
+                                Guardar
+                            </button>
+                            <button type="button" id="cancel-fcm-token-btn" 
+                                class="flex-1 px-4 py-2 border border-gray-300 hover:border-red-600 hover:text-red-600 transition-colors uppercase tracking-wider text-xs font-light">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Formulario de Notificación -->
+                <div id="notification-form" class="border border-gray-200 p-4 mt-6 hidden">
+                    <div class="mb-4 border-b border-gray-200 pb-4 flex justify-between items-center">
+                        <h3 class="text-lg font-light">Enviar Notificación</h3>
+                        <button id="close-notification-form" class="text-gray-400 hover:text-red-600 text-xl">×</button>
+                    </div>
+                    <form id="notification-form-element">
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Título *</label>
+                            <input type="text" id="notification-title" required 
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Mensaje *</label>
+                            <textarea id="notification-message" required rows="4"
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm"></textarea>
+                        </div>
+                        <div class="flex gap-2 pt-4 border-t border-gray-200">
+                            <button type="submit" id="send-notification-btn-submit"
+                                class="flex-1 px-4 py-2 bg-green-600 text-white border border-green-600 hover:bg-green-700 transition-colors uppercase tracking-wider text-xs font-light">
+                                Enviar Notificación
+                            </button>
+                            <button type="button" id="cancel-notification-btn" 
+                                class="flex-1 px-4 py-2 border border-gray-300 hover:border-red-600 hover:text-red-600 transition-colors uppercase tracking-wider text-xs font-light">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tab: Configuraciones -->
+            <div id="configs-tab" class="tab-content hidden">
+                <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-light tracking-tight text-gray-800 mb-1">Gestión de Configuraciones</h2>
+                        <p class="text-sm sm:text-base text-gray-600">Administra las configuraciones del sistema</p>
+                    </div>
+                    <button id="new-config-btn" class="px-4 py-2 bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
+                        Nueva Configuración
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <input type="text" id="configs-search-input" placeholder="Buscar configuraciones..." 
+                        class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm rounded">
+                </div>
+                
+                <div id="configs-list" class="space-y-3"></div>
+                
+                <!-- Formulario de Configuración -->
+                <div id="config-form" class="border border-gray-200 p-4 mt-4 hidden">
+                    <div class="mb-4 border-b border-gray-200 pb-4 flex justify-between items-center">
+                        <h3 id="config-form-title" class="text-lg font-light">Nueva Configuración</h3>
+                        <button id="close-config-form" class="text-gray-400 hover:text-red-600 text-xl">×</button>
+                    </div>
+                    <form id="config-form-element">
+                        <input type="hidden" id="config-key-edit">
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Nombre *</label>
+                            <input type="text" id="config-name" required 
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm"
+                                placeholder="Ej: Costo por hora de producción">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Nombre variable *</label>
+                            <input type="text" id="config-variable-name" required 
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm font-mono"
+                                placeholder="Ej: productionHourlyCost (sin espacios, camelCase)">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Descripción</label>
+                            <textarea id="config-description" rows="2"
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm"
+                                placeholder="Ej: Usado por nrd-costos para cálculos de mano de obra"></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs uppercase tracking-wider text-gray-600">Valor *</label>
+                            <input type="text" id="config-value" required 
+                                class="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-red-600 bg-white text-sm"
+                                placeholder="Ej: 352">
+                        </div>
+                        <div class="flex gap-2 pt-4 border-t border-gray-200">
+                            <button type="submit" id="save-config-btn"
+                                class="flex-1 px-4 py-2 bg-green-600 text-white border border-green-600 hover:bg-green-700 transition-colors uppercase tracking-wider text-xs font-light">
+                                Guardar
+                            </button>
+                            <button type="button" id="cancel-config-btn" 
+                                class="flex-1 px-4 py-2 border border-gray-300 hover:border-red-600 hover:text-red-600 transition-colors uppercase tracking-wider text-xs font-light">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+            </div>
+
+    <!-- Object Properties Modal -->
+    <div id="object-properties-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4" onclick="if(event.target === this) closeObjectPropertiesModal()">
+        <div class="bg-white rounded-lg max-w-lg w-full border border-gray-200 shadow-lg" onclick="event.stopPropagation()">
+            <div class="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between">
+                <h3 id="object-properties-modal-title" class="text-lg sm:text-xl font-light tracking-tight">Propiedades del Objeto</h3>
+                <button onclick="closeObjectPropertiesModal()" class="text-gray-400 hover:text-red-600 text-xl font-light">×</button>
+            </div>
+            <div id="object-properties-modal-content" class="p-4 sm:p-6">
+                <!-- Contenido del objeto se insertará aquí -->
+            </div>
+            <div class="p-4 sm:p-6 border-t border-gray-200">
+                <button onclick="closeObjectPropertiesModal()" class="w-full px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors uppercase tracking-wider text-xs font-light">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full border border-gray-200 shadow-lg">
+            <div class="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-lg sm:text-xl font-light tracking-tight">Perfil de Usuario</h3>
+                <button id="close-profile-modal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="profile-modal-content" class="p-4 sm:p-6">
+                <!-- User data will be inserted here -->
+            </div>
+            <div class="p-4 sm:p-6 border-t border-gray-200 space-y-2">
+                <a href="https://yosbany.github.io/nrd-portal" 
+                  class="block w-full px-4 py-2 bg-blue-600 text-white border border-blue-600 hover:bg-blue-700 transition-colors uppercase tracking-wider text-xs font-light text-center">
+                  Ir al Portal
+                </a>
+                <button id="profile-logout-btn" class="w-full px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors uppercase tracking-wider text-xs font-light">
+                    Cerrar Sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Modal for CRUD operations -->
+    <div id="crud-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] border border-gray-200 shadow-lg modal-scroll">
+            <div id="crud-modal-header" class="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+                <h3 id="crud-modal-title" class="text-lg sm:text-xl font-light tracking-tight"></h3>
+                <button id="close-crud-modal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                        </button>
+                    </div>
+            <div id="crud-modal-content" class="p-4 sm:p-6">
+                <!-- Form content will be inserted here -->
+            </div>
+            <div id="crud-modal-footer" class="p-4 sm:p-6 border-t border-gray-200 flex justify-end gap-2 sticky bottom-0 bg-white">
+                <!-- Buttons will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+
+    <!-- Custom Alert (NRDCommon modal para éxito, error, etc.) -->
+    <div id="custom-alert" class="fixed inset-0 bg-black/50 z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full border border-gray-200 shadow-lg">
+            <div class="p-4 sm:p-6">
+                <h3 id="alert-title" class="text-lg sm:text-xl font-light mb-3 sm:mb-4 text-black"></h3>
+                <p id="alert-message" class="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6"></p>
+                <div class="flex justify-end">
+                    <button id="alert-ok" class="px-4 sm:px-6 py-2 bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
+                        Aceptar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full border border-gray-200 shadow-lg">
+            <div class="p-4 sm:p-6 border-b border-gray-200">
+                <h3 id="confirm-modal-title" class="text-lg sm:text-xl font-light tracking-tight text-gray-800">Confirmar Acción</h3>
+            </div>
+            <div class="p-4 sm:p-6">
+                <p id="confirm-modal-message" class="text-sm sm:text-base text-gray-600"></p>
+            </div>
+            <div class="p-4 sm:p-6 border-t border-gray-200 flex justify-end gap-2">
+                <button 
+                    id="confirm-modal-cancel"
+                    class="px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors uppercase tracking-wider text-xs font-light"
+                >
+                    Cancelar
+                </button>
+                <button 
+                    id="confirm-modal-confirm"
+                    class="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors uppercase tracking-wider text-xs font-light"
+                >
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Result Modal -->
+    <div id="notification-result-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full border border-gray-200 shadow-lg">
+            <div class="p-4 sm:p-6 border-b border-gray-200 flex items-center justify-between">
+                <h3 id="notification-result-title" class="text-lg sm:text-xl font-light tracking-tight">Resultado del Envío</h3>
+                <button id="close-notification-result-modal" class="text-gray-400 hover:text-red-600 text-xl font-light">×</button>
+            </div>
+            <div class="p-4 sm:p-6 space-y-4">
+                <div id="notification-result-icon" class="text-center text-4xl mb-2"></div>
+                <div id="notification-result-type" class="text-center mb-2">
+                    <span class="inline-block px-3 py-1 rounded-full text-xs font-light uppercase tracking-wider"></span>
+                </div>
+                <p id="notification-result-message" class="text-sm sm:text-base text-gray-700 text-center"></p>
+            </div>
+            <div class="p-4 sm:p-6 border-t border-gray-200">
+                <button id="notification-result-confirm-btn" 
+                    class="w-full px-4 sm:px-6 py-2 bg-red-600 text-white border border-red-600 hover:bg-red-700 transition-colors uppercase tracking-wider text-xs sm:text-sm font-light">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Close CRUD Modal Handler -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const closeCrudModalBtn = document.getElementById('close-crud-modal');
+        if (closeCrudModalBtn) {
+          closeCrudModalBtn.addEventListener('click', () => {
+            const modal = document.getElementById('crud-modal');
+            if (modal) {
+              modal.classList.add('hidden');
+            }
+          });
+            }
+
+        // Close modal on outside click
+        const crudModal = document.getElementById('crud-modal');
+        if (crudModal) {
+          crudModal.addEventListener('click', (e) => {
+            if (e.target === crudModal) {
+              crudModal.classList.add('hidden');
+            }
+          });
+        }
+      });
+    </script>
+
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          const swVersion = new URLSearchParams(window.location.search).get('v') || Date.now();
+          navigator.serviceWorker.register(`/service-worker.js?v=${swVersion}`)
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
+</body>
+</html>
