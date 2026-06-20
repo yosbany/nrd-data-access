@@ -598,12 +598,15 @@ function initApp() {
 
     let itemData = null;
     if (itemId) {
+      showSpinner('Cargando registro...');
       try {
         const service = window.nrd[entity.service];
         itemData = await service.getById(itemId);
       } catch (error) {
         alert('Error al cargar el registro: ' + error.message);
         return;
+      } finally {
+        hideSpinner();
       }
     }
 
@@ -789,6 +792,7 @@ function initApp() {
     }
 
     try {
+      showSpinner('Guardando...');
       const service = window.nrd[entity.service];
       
       if (entity.isSingle) {
@@ -809,6 +813,8 @@ function initApp() {
     } catch (error) {
       alert('Error al guardar: ' + error.message);
       console.error('Save error:', error);
+    } finally {
+      hideSpinner();
     }
   }
 
@@ -823,6 +829,7 @@ function initApp() {
         'Eliminar Registro',
         '¿Estás seguro de eliminar este registro? Esta acción no se puede deshacer.',
         async () => {
+          showSpinner('Eliminando...');
           try {
             const service = window.nrd[serviceName];
             await service.delete(itemId);
@@ -831,6 +838,8 @@ function initApp() {
             alert('Error al eliminar: ' + error.message);
             console.error('Delete error:', error);
             resolve(false);
+          } finally {
+            hideSpinner();
           }
         },
         () => {
