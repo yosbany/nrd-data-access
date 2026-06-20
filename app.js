@@ -278,6 +278,13 @@ function initApp() {
       if (window.loadConfigsTab && typeof window.loadConfigsTab === 'function') {
         window.loadConfigsTab();
       }
+    } else if (tabName === 'tools') {
+      if (window.initializeToolsTab && typeof window.initializeToolsTab === 'function') {
+        window.initializeToolsTab();
+      }
+      if (window.loadToolsTab && typeof window.loadToolsTab === 'function') {
+        window.loadToolsTab();
+      }
     }
   }
   
@@ -893,70 +900,6 @@ function initApp() {
   }
 
   window.showConfirmModal = showConfirmModal;
-
-  function renderTools(container) {
-    container.innerHTML = `
-      <div class="mb-4 sm:mb-6">
-        <h2 class="text-lg sm:text-xl font-light tracking-tight text-gray-800 mb-1">Herramientas de Administración</h2>
-        <p class="text-sm sm:text-base text-gray-600">Depuración, limpieza y migración de datos</p>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Depuración -->
-        <div class="bg-white border border-gray-200 p-4 sm:p-6">
-          <h3 class="text-base font-medium mb-3">Depuración</h3>
-          <p class="text-sm text-gray-600 mb-4">Encuentra y corrige inconsistencias en los datos</p>
-          <button 
-            onclick="runDebug()"
-            class="px-4 py-2 bg-yellow-600 text-white hover:bg-yellow-700 transition-colors uppercase tracking-wider text-xs font-light"
-          >
-            Ejecutar Depuración
-          </button>
-        </div>
-
-        <!-- Limpieza -->
-        <div class="bg-white border border-gray-200 p-4 sm:p-6">
-          <h3 class="text-base font-medium mb-3">Limpieza</h3>
-          <p class="text-sm text-gray-600 mb-4">Elimina datos obsoletos o duplicados</p>
-          <button 
-            onclick="runCleanup()"
-            class="px-4 py-2 bg-orange-600 text-white hover:bg-orange-700 transition-colors uppercase tracking-wider text-xs font-light"
-          >
-            Ejecutar Limpieza
-          </button>
-        </div>
-
-        <!-- Migración -->
-        <div class="bg-white border border-gray-200 p-4 sm:p-6">
-          <h3 class="text-base font-medium mb-3">Migración</h3>
-          <p class="text-sm text-gray-600 mb-4">Migra datos entre estructuras</p>
-          <button 
-            onclick="runMigration()"
-            class="px-4 py-2 bg-purple-600 text-white hover:bg-purple-700 transition-colors uppercase tracking-wider text-xs font-light"
-          >
-            Ejecutar Migración
-          </button>
-        </div>
-
-        <!-- Exportar Datos -->
-        <div class="bg-white border border-gray-200 p-4 sm:p-6">
-          <h3 class="text-base font-medium mb-3">Exportar Datos</h3>
-          <p class="text-sm text-gray-600 mb-4">Descarga todos los datos en formato JSON</p>
-          <button 
-            onclick="exportData()"
-            class="px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition-colors uppercase tracking-wider text-xs font-light"
-          >
-            Exportar
-          </button>
-        </div>
-      </div>
-
-      <div id="tools-output" class="mt-6 bg-white border border-gray-200 p-4 sm:p-6 hidden">
-        <h3 class="text-base font-medium mb-3">Resultado</h3>
-        <pre id="tools-output-content" class="text-xs overflow-auto max-h-96"></pre>
-      </div>
-    `;
-  }
 
   window.runDebug = async function() {
     const output = document.getElementById('tools-output');
