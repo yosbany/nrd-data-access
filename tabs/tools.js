@@ -2,18 +2,7 @@
  * Tab Herramientas — NRD Data Access Admin
  */
 (function () {
-  const FIREBASE_PROJECT_ID = 'nrd-db';
-  const FUNCTIONS_REGION = 'us-central1';
-  const CLEANUP_FUNCTION_NAME = 'cleanupAnonymousUsers';
-
   let initialized = false;
-
-  function escapeHtml(text) {
-    if (text == null) return '';
-    const div = document.createElement('div');
-    div.textContent = String(text);
-    return div.innerHTML;
-  }
 
   function getToolsOutput() {
     return {
@@ -29,116 +18,56 @@
     content.textContent = text;
   }
 
-  function appendToolsOutput(text) {
-    const { box, content } = getToolsOutput();
-    if (!box || !content) return;
-    box.classList.remove('hidden');
-    content.textContent += text;
+  function getAnonCleanupDays() {
+    const input = document.getElementById('anon-cleanup-days');
+    const days = parseInt(input && input.value, 10);
+    return days >= 1 && days <= 3650 ? days : 90;
   }
 
-  async function getAdminIdToken() {
-    const user = window.nrd && window.nrd.auth ? window.nrd.auth.getCurrentUser() : null;
-    if (!user) throw new Error('Debes iniciar sesión como administrador.');
-    if (typeof user.getIdToken !== 'function') {
-      throw new Error('No se pudo obtener el token de sesión.');
-    }
-    return user.getIdToken();
+  function buildAnonCleanupCommands(days, dryRun) {
+    const scriptPath = 'nrd-data-access/tools/cleanup-anonymous-users/cleanup-anonymous-users.py';
+    const dryFlag = dryRun ? ' --dry-run' : '';
+    return [
+      '# Una sola vez: pip install firebase-admin',
+      '# Descargá la clave JSON en Firebase Console → Cuentas de servicio',
+      'export GOOGLE_APPLICATION_CREDENTIALS=/ruta/a/service-account.json',
+      '',
+      'python3 ' + scriptPath + ' --days ' + days + dryFlag
+    ].join('\n');
   }
 
-  async function callCleanupAnonymousUsers(payload) {
-    const token = await getAdminIdToken();
-    const url = 'https://' + FUNCTIONS_REGION + '-' + FIREBASE_PROJECT_ID + '.cloudfunctions.net/' + CLEANUP_FUNCTION_NAME;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + token
-      },
-      body: JSON.stringify({ data: payload })
-    });
-
-    let body;
-    try {
-      body = await response.json();
-    } catch (_) {
-      throw new Error('Respuesta inválida del servidor (¿está desplegada la Cloud Function?).');
-    }
-
-    if (body.error) {
-      const msg = body.error.message || body.error.status || 'Error en Cloud Function';
-      throw new Error(msg);
-    }
-
-    return body.result;
-  }
-
-  function formatCleanupResult(result) {
-    const lines = [];
-    lines.push(result.dryRun ? '=== Simulación (sin borrar) ===' : '=== Limpieza ejecutada ===');
-    lines.push('Antigüedad mínima: ' + result.olderThanDays + ' días');
-    lines.push('Usuarios revisados: ' + result.scanned);
-    lines.push('Anónimos inactivos encontrados: ' + result.matched);
-    lines.push('En cola para borrar: ' + result.queuedForDelete);
-    if (!result.dryRun) {
-      lines.push('Eliminados: ' + result.deleted);
-      if (result.failed) lines.push('Fallidos: ' + result.failed);
-    }
-    if (result.truncated) {
-      lines.push('Nota: hay más usuarios elegibles; ejecutá de nuevo para continuar.');
-    }
-    if (result.errors && result.errors.length) {
-      lines.push('\nErrores:');
-      result.errors.forEach(function (err) {
-        lines.push('- ' + (err.uid || '?') + ': ' + (err.message || err));
+  function copyAnonCleanupCommand(dryRun) {
+    const days = getAnonCleanupDays();
+    const text = buildAnonCleanupCommands(days, dryRun);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        showToolsOutput('Comando copiado al portapapeles:\n\n' + text);
+      }).catch(function () {
+        showToolsOutput(text);
       });
-    }
-    return lines.join('\n');
-  }
-
-  async function runAnonymousCleanup(dryRun) {
-    const daysInput = document.getElementById('anon-cleanup-days');
-    const days = parseInt(daysInput && daysInput.value, 10) || 90;
-
-    showToolsOutput((dryRun ? 'Analizando' : 'Eliminando') + ' usuarios anónimos inactivos (> ' + days + ' días)...\n');
-
-    try {
-      const result = await callCleanupAnonymousUsers({
-        olderThanDays: days,
-        dryRun: dryRun,
-        maxDelete: 1000
-      });
-      appendToolsOutput('\n' + formatCleanupResult(result));
-    } catch (error) {
-      appendToolsOutput('\nError: ' + (error.message || String(error)));
-      appendToolsOutput('\n\nSi la función no está desplegada:\n');
-      appendToolsOutput('  cd nrd-data-access/functions && npm install\n');
-      appendToolsOutput('  firebase deploy --only functions:cleanupAnonymousUsers --project nrd-db\n');
+    } else {
+      showToolsOutput(text);
     }
   }
 
   function bindAnonymousCleanupHandlers() {
     const previewBtn = document.getElementById('anon-cleanup-preview-btn');
-    const runBtn = document.getElementById('anon-cleanup-run-btn');
+    const copyBtn = document.getElementById('anon-cleanup-copy-btn');
 
     if (previewBtn) {
       previewBtn.onclick = function () {
-        runAnonymousCleanup(true);
+        const days = getAnonCleanupDays();
+        showToolsOutput(
+          'Ejecutá en tu Mac (terminal), sin hosting:\n\n' +
+          buildAnonCleanupCommands(days, true) +
+          '\n\n--dry-run solo muestra cuántos se borrarían.'
+        );
       };
     }
 
-    if (runBtn) {
-      runBtn.onclick = function () {
-        const days = parseInt(document.getElementById('anon-cleanup-days')?.value, 10) || 90;
-        const message =
-          '¿Eliminar usuarios anónimos inactivos hace más de ' + days + ' días?\n\n' +
-          'Esta acción no se puede deshacer. Los pedidos en RTDB no se borran; solo la cuenta Auth.';
-        if (typeof window.showConfirmModal === 'function') {
-          window.showConfirmModal('Limpiar usuarios anónimos', message, function () {
-            runAnonymousCleanup(false);
-          });
-        } else if (confirm(message)) {
-          runAnonymousCleanup(false);
-        }
+    if (copyBtn) {
+      copyBtn.onclick = function () {
+        copyAnonCleanupCommand(false);
       };
     }
   }
@@ -155,8 +84,15 @@
       '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">' +
       '<div class="bg-white border border-gray-200 p-4 sm:p-6 md:col-span-2">' +
       '<h3 class="text-base font-medium mb-2">Usuarios anónimos (catálogo)</h3>' +
-      '<p class="text-sm text-gray-600 mb-4">Elimina cuentas Firebase Auth anónimas inactivas creadas por visitantes del catálogo. Requiere Cloud Function desplegada.</p>' +
-      '<div class="flex flex-col sm:flex-row sm:items-end gap-3 mb-4">' +
+      '<p class="text-sm text-gray-600 mb-3">Firebase Auth no permite borrar otros usuarios desde el navegador. ' +
+      'Usá el script local con una cuenta de servicio (sin Cloud Functions ni hosting extra).</p>' +
+      '<ol class="text-sm text-gray-600 mb-4 list-decimal list-inside space-y-1">' +
+      '<li>Firebase Console → Configuración → Cuentas de servicio → Generar nueva clave JSON</li>' +
+      '<li><code class="text-xs bg-gray-100 px-1">pip install firebase-admin</code></li>' +
+      '<li>Elegí días de inactividad y copiá el comando</li>' +
+      '<li>Primero simulá con <code class="text-xs bg-gray-100 px-1">--dry-run</code>, después ejecutá sin ese flag</li>' +
+      '</ol>' +
+      '<div class="flex flex-col sm:flex-row sm:items-end gap-3">' +
       '<div class="flex-1">' +
       '<label for="anon-cleanup-days" class="block text-xs uppercase tracking-wider text-gray-600 mb-1">Inactivos hace más de (días)</label>' +
       '<input type="number" id="anon-cleanup-days" min="1" max="3650" value="90" ' +
@@ -165,15 +101,15 @@
       '<div class="flex flex-wrap gap-2">' +
       '<button type="button" id="anon-cleanup-preview-btn" ' +
       'class="px-4 py-2 bg-gray-600 text-white hover:bg-gray-700 transition-colors uppercase tracking-wider text-xs font-light">' +
-      'Simular' +
+      'Ver comando (simular)' +
       '</button>' +
-      '<button type="button" id="anon-cleanup-run-btn" ' +
+      '<button type="button" id="anon-cleanup-copy-btn" ' +
       'class="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors uppercase tracking-wider text-xs font-light">' +
-      'Ejecutar limpieza' +
+      'Copiar comando (borrar)' +
       '</button>' +
       '</div>' +
       '</div>' +
-      '<p class="text-xs text-gray-500">Simular cuenta cuántos se borrarían. Ejecutar elimina hasta 1000 por corrida; repetí si hay más.</p>' +
+      '<p class="text-xs text-gray-500 mt-3">Script: <code class="bg-gray-100 px-1">tools/cleanup-anonymous-users/cleanup-anonymous-users.py</code></p>' +
       '</div>' +
       '<div class="bg-white border border-gray-200 p-4 sm:p-6">' +
       '<h3 class="text-base font-medium mb-3">Depuración</h3>' +

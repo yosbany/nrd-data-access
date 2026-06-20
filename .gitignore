@@ -6,4 +6,8 @@ node_modules/
 .vscode/
 *.json.export
 nrd-db-default-rtdb-export.json
+*-firebase-adminsdk-*.json
+service-account.json
+__pycache__/
+*.pyc
 
