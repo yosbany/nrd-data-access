@@ -434,5 +434,73 @@ export interface CatalogConfig {
     estimatedMinutes?: string;
     brandName?: string;
     tagline?: string;
+    storeOpenTime?: string;
+    storeCloseTime?: string;
+    storeManualOverride?: 'open' | 'closed' | null;
+    /** Medios de pago habilitados en el checkout del catálogo (envío). Default: todos true. */
+    paymentMethods?: {
+        efectivo?: boolean;
+        pos?: boolean;
+        mercadopago?: boolean;
+    };
+}
+/** Contenido editable de nrd-web (nodo único /web). */
+export interface WebBanner {
+    enabled?: boolean;
+    text?: string;
+    type?: 'info' | 'warning' | 'promo';
+}
+export interface WebHero {
+    eyebrow?: string;
+    title?: string;
+    subtitle?: string;
+}
+export interface WebLinks {
+    catalogUrl?: string;
+    pedidosYaUrl?: string;
+    instagramUrl?: string;
+    facebookUrl?: string;
+    tiktokUrl?: string;
+}
+export interface WebWhatsapp {
+    e164?: string;
+    display?: string;
+    message?: string;
+}
+export interface WebFeaturedProduct {
+    id: string;
+    name: string;
+    category?: string;
+    description?: string;
+    image?: string;
+    alt?: string;
+    active?: boolean;
+    order?: number;
+}
+export interface WebFaqItem {
+    id: string;
+    q: string;
+    a: string;
+    active?: boolean;
+    order?: number;
+}
+export interface WebTestimonial {
+    id: string;
+    name: string;
+    rating?: number;
+    text: string;
+    active?: boolean;
+    order?: number;
+}
+export interface WebContent {
+    banner?: WebBanner;
+    hero?: WebHero;
+    hoursDisplay?: string;
+    links?: WebLinks;
+    whatsapp?: WebWhatsapp;
+    featuredProducts?: WebFeaturedProduct[];
+    faq?: WebFaqItem[];
+    testimonials?: WebTestimonial[];
+    updatedAt?: number;
 }
 //# sourceMappingURL=index.d.ts.map

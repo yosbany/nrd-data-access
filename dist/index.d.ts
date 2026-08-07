@@ -27,6 +27,7 @@ import { NotificationsService } from './services/notifications.service';
 import { FCMTokensService } from './services/fcm-tokens.service';
 import { ConfigService } from './services/config.service';
 import { CatalogConfigService } from './services/catalog-config.service';
+import { WebContentService } from './services/web-content.service';
 import { PurchaseOrdersService } from './services/purchase-orders.service';
 import { MeasurementUnitsService } from './services/measurement-units.service';
 import { BudgetsService } from './services/budgets.service';
@@ -68,6 +69,7 @@ declare class NRDDataAccess {
     fcmTokens: FCMTokensService;
     config: ConfigService;
     catalogConfig: CatalogConfigService;
+    webContent: WebContentService;
     purchaseOrders: PurchaseOrdersService;
     measurementUnits: MeasurementUnitsService;
     budgets: BudgetsService;

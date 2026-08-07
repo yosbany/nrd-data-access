@@ -28,6 +28,7 @@ import { NotificationsService } from './services/notifications.service';
 import { FCMTokensService } from './services/fcm-tokens.service';
 import { ConfigService } from './services/config.service';
 import { CatalogConfigService } from './services/catalog-config.service';
+import { WebContentService } from './services/web-content.service';
 import { PurchaseOrdersService } from './services/purchase-orders.service';
 import { MeasurementUnitsService } from './services/measurement-units.service';
 import { BudgetsService } from './services/budgets.service';
@@ -75,6 +76,7 @@ class NRDDataAccess {
   public fcmTokens: FCMTokensService;
   public config: ConfigService;
   public catalogConfig: CatalogConfigService;
+  public webContent: WebContentService;
   public purchaseOrders: PurchaseOrdersService;
   public measurementUnits: MeasurementUnitsService;
   public budgets: BudgetsService;
@@ -114,6 +116,7 @@ class NRDDataAccess {
     this.fcmTokens = new FCMTokensService();
     this.config = new ConfigService();
     this.catalogConfig = new CatalogConfigService();
+    this.webContent = new WebContentService();
     this.purchaseOrders = new PurchaseOrdersService();
     this.measurementUnits = new MeasurementUnitsService();
     this.budgets = new BudgetsService();
