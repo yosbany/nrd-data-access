@@ -515,4 +515,13 @@ export interface CatalogConfig {
   estimatedMinutes?: string;
   brandName?: string;
   tagline?: string;
+  storeOpenTime?: string;
+  storeCloseTime?: string;
+  storeManualOverride?: 'open' | 'closed' | null;
+  /** Medios de pago habilitados en el checkout del catálogo (envío). Default: todos true. */
+  paymentMethods?: {
+    efectivo?: boolean;
+    pos?: boolean;
+    mercadopago?: boolean;
+  };
 }
