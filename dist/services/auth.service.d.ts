@@ -10,6 +10,14 @@ export declare class AuthService {
      */
     signIn(email: string, password: string): Promise<UserCredential>;
     /**
+     * Sign in with a Firebase custom token (SSO between NRD apps; minted by nrd-backend-api /api/sso/token).
+     */
+    signInWithCustomToken(token: string): Promise<UserCredential>;
+    /**
+     * Firebase ID token of the current user (null if signed out).
+     */
+    getIdToken(forceRefresh?: boolean): Promise<string | null>;
+    /**
      * Create a new user account
      */
     signUp(email: string, password: string): Promise<UserCredential>;
