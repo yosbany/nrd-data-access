@@ -2,6 +2,7 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
   signInAnonymously,
+  signInWithCustomToken,
   signOut,
   onAuthStateChanged,
   User,
@@ -25,6 +26,22 @@ export class AuthService {
   async signIn(email: string, password: string): Promise<UserCredential> {
     const auth = getFirebaseAuth();
     return signInWithEmailAndPassword(auth, email, password);
+  }
+
+  /**
+   * Sign in with a Firebase custom token (SSO between NRD apps; minted by nrd-backend-api /api/sso/token).
+   */
+  async signInWithCustomToken(token: string): Promise<UserCredential> {
+    const auth = getFirebaseAuth();
+    return signInWithCustomToken(auth, token);
+  }
+
+  /**
+   * Firebase ID token of the current user (null if signed out).
+   */
+  async getIdToken(forceRefresh = false): Promise<string | null> {
+    const user = getFirebaseAuth().currentUser;
+    return user ? user.getIdToken(forceRefresh) : null;
   }
 
   /**
